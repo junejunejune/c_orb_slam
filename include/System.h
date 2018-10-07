@@ -39,7 +39,7 @@
 namespace ORB_SLAM2
 {
 
-class Viewer;
+struct Viewer;
 class FrameDrawer;
 class Map;
 class Tracking;

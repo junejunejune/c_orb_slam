@@ -1507,8 +1507,8 @@ void Tracking::Reset()
     cout << "System Reseting" << endl;
     if(mpViewer)
     {
-        mpViewer->RequestStop();
-        while(!mpViewer->isStopped())
+        Viewer_RequestStop(mpViewer);
+        while(!Viewer_isStopped(mpViewer))
             usleep(3000);
     }
 
@@ -1546,7 +1546,7 @@ void Tracking::Reset()
     mlbLost.clear();
 
     if(mpViewer)
-        mpViewer->Release();
+        Viewer_Release(mpViewer);
 }
 
 void Tracking::ChangeCalibration(const string &strSettingPath)
