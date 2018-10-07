@@ -541,7 +541,7 @@ void KeyFrame::SetBadFlag()
 
 
     mpMap->EraseKeyFrame(this);
-    KeyFrameDatabase_erase(mpKeyFrameDB,this);
+    mpKeyFrameDB->erase(this);
 }
 
 bool KeyFrame::isBad()

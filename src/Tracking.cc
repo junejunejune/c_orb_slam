@@ -1348,7 +1348,7 @@ bool Tracking::Relocalization()
 
     // Relocalization is performed when tracking is lost
     // Track Lost: Query KeyFrame Database for keyframe candidates for relocalisation
-    vector<KeyFrame*> vpCandidateKFs = KeyFrameDatabase_DetectRelocalizationCandidates(mpKeyFrameDB, &mCurrentFrame);
+    vector<KeyFrame*> vpCandidateKFs = mpKeyFrameDB->DetectRelocalizationCandidates(&mCurrentFrame);
 
     if(vpCandidateKFs.empty())
         return false;
@@ -1527,7 +1527,7 @@ void Tracking::Reset()
 
     // Clear BoW Database
     cout << "Reseting Database...";
-    KeyFrameDatabase_clear(mpKeyFrameDB);
+    mpKeyFrameDB->clear();
     cout << " done" << endl;
 
     // Clear Map (this erase MapPoints and KeyFrames)
