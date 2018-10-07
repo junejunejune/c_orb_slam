@@ -275,8 +275,12 @@ bool LoopClosing::ComputeSim3()
         }
         else
         {
-            Sim3Solver* pSolver = new Sim3Solver(mpCurrentKF,pKF,vvpMapPointMatches[i],mbFixScale);
-            pSolver->SetRansacParameters(0.99,20,300);
+           // Sim3Solver* pSolver = new Sim3Solver(mpCurrentKF,pKF,vvpMapPointMatches[i],mbFixScale);
+            struct Sim3Solver sSim3Solver;
+            Sim3Solver *pSolver= &sSim3Solver;
+            Sim3Solver_init(pSolver, mpCurrentKF, pKF, vvpMapPointMatches[i], mbFixScale);
+          
+            Sim3Solver_SetRansacParameters(pSolver, 0.99,20,300);
             vpSim3Solvers[i] = pSolver;
         }
 
@@ -301,8 +305,11 @@ bool LoopClosing::ComputeSim3()
             int nInliers;
             bool bNoMore;
 
-            Sim3Solver* pSolver = vpSim3Solvers[i];
-            cv::Mat Scm  = pSolver->iterate(5,bNoMore,vbInliers,nInliers);
+            //Sim3Solver* pSolver = vpSim3Solvers[i];
+            Sim3Solver *pSolver= vpSim3Solvers[i];
+            Sim3Solver_init(pSolver, mpCurrentKF, pKF, vvpMapPointMatches[i], mbFixScale);
+            
+            cv::Mat Scm  = Sim3Solver_iterate(pSolver, 5,bNoMore,vbInliers,nInliers);
 
             // If Ransac reachs max. iterations discard keyframe
             if(bNoMore)
@@ -321,9 +328,9 @@ bool LoopClosing::ComputeSim3()
                        vpMapPointMatches[j]=vvpMapPointMatches[i][j];
                 }
 
-                cv::Mat R = pSolver->GetEstimatedRotation();
-                cv::Mat t = pSolver->GetEstimatedTranslation();
-                const float s = pSolver->GetEstimatedScale();
+                cv::Mat R = Sim3Solver_GetEstimatedRotation(pSolver);
+                cv::Mat t = Sim3Solver_GetEstimatedTranslation(pSolver);
+                const float s = Sim3Solver_GetEstimatedScale(pSolver);
                 ORBmatcher_SearchBySim3(matcher, mpCurrentKF,pKF,vpMapPointMatches,s,R,t,7.5);
 
                 g2o::Sim3 gScm(Converter::toMatrix3d(R),Converter::toVector3d(t),s);

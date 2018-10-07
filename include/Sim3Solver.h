@@ -31,38 +31,8 @@
 
 namespace ORB_SLAM2
 {
-
-class Sim3Solver
+struct Sim3Solver
 {
-public:
-
-    Sim3Solver(KeyFrame* pKF1, KeyFrame* pKF2, const std::vector<MapPoint*> &vpMatched12, const bool bFixScale = true);
-
-    void SetRansacParameters(double probability = 0.99, int minInliers = 6 , int maxIterations = 300);
-
-    cv::Mat find(std::vector<bool> &vbInliers12, int &nInliers);
-
-    cv::Mat iterate(int nIterations, bool &bNoMore, std::vector<bool> &vbInliers, int &nInliers);
-
-    cv::Mat GetEstimatedRotation();
-    cv::Mat GetEstimatedTranslation();
-    float GetEstimatedScale();
-
-
-protected:
-
-    void ComputeCentroid(cv::Mat &P, cv::Mat &Pr, cv::Mat &C);
-
-    void ComputeSim3(cv::Mat &P1, cv::Mat &P2);
-
-    void CheckInliers();
-
-    void Project(const std::vector<cv::Mat> &vP3Dw, std::vector<cv::Mat> &vP2D, cv::Mat Tcw, cv::Mat K);
-    void FromCameraToImage(const std::vector<cv::Mat> &vP3Dc, std::vector<cv::Mat> &vP2D, cv::Mat K);
-
-
-protected:
-
     // KeyFrames and matches
     KeyFrame* mpKF1;
     KeyFrame* mpKF2;
@@ -125,8 +95,28 @@ protected:
     // Calibration
     cv::Mat mK1;
     cv::Mat mK2;
-
 };
+    void Sim3Solver_init(Sim3Solver* mpSim3Solver,KeyFrame* pKF1, KeyFrame* pKF2, const std::vector<MapPoint*> &vpMatched12, const bool bFixScale = true);
+
+    void Sim3Solver_SetRansacParameters(Sim3Solver* mpSim3Solver,double probability = 0.99, int minInliers = 6 , int maxIterations = 300);
+
+    cv::Mat Sim3Solver_find(Sim3Solver* mpSim3Solver,std::vector<bool> &vbInliers12, int &nInliers);
+
+    cv::Mat Sim3Solver_iterate(Sim3Solver* mpSim3Solver,int nIterations, bool &bNoMore, std::vector<bool> &vbInliers, int &nInliers);
+
+    cv::Mat Sim3Solver_GetEstimatedRotation(Sim3Solver* mpSim3Solver);
+    cv::Mat Sim3Solver_GetEstimatedTranslation(Sim3Solver* mpSim3Solver);
+    float Sim3Solver_GetEstimatedScale(Sim3Solver* mpSim3Solver);
+
+    void Sim3Solver_ComputeCentroid(Sim3Solver* mpSim3Solver,cv::Mat &P, cv::Mat &Pr, cv::Mat &C);
+
+    void Sim3Solver_ComputeSim3(Sim3Solver* mpSim3Solver,cv::Mat &P1, cv::Mat &P2);
+
+    void Sim3Solver_CheckInliers(Sim3Solver* mpSim3Solver);
+
+    void Sim3Solver_Project(Sim3Solver* mpSim3Solver,const std::vector<cv::Mat> &vP3Dw, std::vector<cv::Mat> &vP2D, cv::Mat Tcw, cv::Mat K);
+    void Sim3Solver_FromCameraToImage(Sim3Solver* mpSim3Solver,const std::vector<cv::Mat> &vP3Dc, std::vector<cv::Mat> &vP2D, cv::Mat K);
+
 
 } //namespace ORB_SLAM
 
