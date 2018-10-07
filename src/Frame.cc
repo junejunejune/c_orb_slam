@@ -468,7 +468,7 @@ void Frame::ComputeStereoMatches()
     mvuRight = vector<float>(N,-1.0f);
     mvDepth = vector<float>(N,-1.0f);
 
-    const int thOrbDist = (ORBmatcher::TH_HIGH+ORBmatcher::TH_LOW)/2;
+    const int thOrbDist = (TH_HIGH+TH_LOW)/2;
 
     const int nRows = mpORBextractorLeft->mvImagePyramid[0].rows;
 
@@ -519,7 +519,7 @@ void Frame::ComputeStereoMatches()
         if(maxU<0)
             continue;
 
-        int bestDist = ORBmatcher::TH_HIGH;
+        int bestDist = TH_HIGH;
         size_t bestIdxR = 0;
 
         const cv::Mat &dL = mDescriptors.row(iL);
@@ -538,7 +538,7 @@ void Frame::ComputeStereoMatches()
             if(uR>=minU && uR<=maxU)
             {
                 const cv::Mat &dR = mDescriptorsRight.row(iR);
-                const int dist = ORBmatcher::DescriptorDistance(dL,dR);
+                const int dist = ORBmatcher_DescriptorDistance(dL,dR);
 
                 if(dist<bestDist)
                 {

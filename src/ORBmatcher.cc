@@ -33,16 +33,20 @@ using namespace std;
 
 namespace ORB_SLAM2
 {
+/*
+const int ORBmatcher->TH_HIGH = 100;
+const int ORBmatcher->TH_LOW = 50;
+const int ORBmatcher->HISTO_LENGTH = 30;
+*/
+void ORBmatcher_init(ORBmatcher* mpORBmatcher, float nnratio, bool checkOri)
+{ 
 
-const int ORBmatcher::TH_HIGH = 100;
-const int ORBmatcher::TH_LOW = 50;
-const int ORBmatcher::HISTO_LENGTH = 30;
+    mpORBmatcher->mfNNratio=nnratio;
+    mpORBmatcher->mbCheckOrientation=checkOri;
 
-ORBmatcher::ORBmatcher(float nnratio, bool checkOri): mfNNratio(nnratio), mbCheckOrientation(checkOri)
-{
 }
 
-int ORBmatcher::SearchByProjection(Frame &F, const vector<MapPoint*> &vpMapPoints, const float th)
+int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame &F, const vector<MapPoint*> &vpMapPoints, const float th)
 {
     int nmatches=0;
 
@@ -60,7 +64,7 @@ int ORBmatcher::SearchByProjection(Frame &F, const vector<MapPoint*> &vpMapPoint
         const int &nPredictedLevel = pMP->mnTrackScaleLevel;
 
         // The size of the window will depend on the viewing direction
-        float r = RadiusByViewingCos(pMP->mTrackViewCos);
+        float r = ORBmatcher_RadiusByViewingCos(mpORBmatcher, pMP->mTrackViewCos);
 
         if(bFactor)
             r*=th;
@@ -97,7 +101,7 @@ int ORBmatcher::SearchByProjection(Frame &F, const vector<MapPoint*> &vpMapPoint
 
             const cv::Mat &d = F.mDescriptors.row(idx);
 
-            const int dist = DescriptorDistance(MPdescriptor,d);
+            const int dist = ORBmatcher_DescriptorDistance(MPdescriptor,d);
 
             if(dist<bestDist)
             {
@@ -117,7 +121,7 @@ int ORBmatcher::SearchByProjection(Frame &F, const vector<MapPoint*> &vpMapPoint
         // Apply ratio to second match (only if best and second are in the same scale level)
         if(bestDist<=TH_HIGH)
         {
-            if(bestLevel==bestLevel2 && bestDist>mfNNratio*bestDist2)
+            if(bestLevel==bestLevel2 && bestDist>mpORBmatcher->mfNNratio*bestDist2)
                 continue;
 
             F.mvpMapPoints[bestIdx]=pMP;
@@ -128,7 +132,7 @@ int ORBmatcher::SearchByProjection(Frame &F, const vector<MapPoint*> &vpMapPoint
     return nmatches;
 }
 
-float ORBmatcher::RadiusByViewingCos(const float &viewCos)
+float ORBmatcher_RadiusByViewingCos(ORBmatcher* mpORBmatcher,const float &viewCos)
 {
     if(viewCos>0.998)
         return 2.5;
@@ -137,7 +141,7 @@ float ORBmatcher::RadiusByViewingCos(const float &viewCos)
 }
 
 
-bool ORBmatcher::CheckDistEpipolarLine(const cv::KeyPoint &kp1,const cv::KeyPoint &kp2,const cv::Mat &F12,const KeyFrame* pKF2)
+bool ORBmatcher_CheckDistEpipolarLine(ORBmatcher* mpORBmatcher,const cv::KeyPoint &kp1,const cv::KeyPoint &kp2,const cv::Mat &F12,const KeyFrame* pKF2)
 {
     // Epipolar line in second image l = x1'F12 = [a b c]
     const float a = kp1.pt.x*F12.at<float>(0,0)+kp1.pt.y*F12.at<float>(1,0)+F12.at<float>(2,0);
@@ -156,7 +160,7 @@ bool ORBmatcher::CheckDistEpipolarLine(const cv::KeyPoint &kp1,const cv::KeyPoin
     return dsqr<3.84*pKF2->mvLevelSigma2[kp2.octave];
 }
 
-int ORBmatcher::SearchByBoW(KeyFrame* pKF,Frame &F, vector<MapPoint*> &vpMapPointMatches)
+int ORBmatcher_SearchByBoW(ORBmatcher* mpORBmatcher,KeyFrame* pKF,Frame &F, vector<MapPoint*> &vpMapPointMatches)
 {
     const vector<MapPoint*> vpMapPointsKF = pKF->GetMapPointMatches();
 
@@ -211,7 +215,7 @@ int ORBmatcher::SearchByBoW(KeyFrame* pKF,Frame &F, vector<MapPoint*> &vpMapPoin
 
                     const cv::Mat &dF = F.mDescriptors.row(realIdxF);
 
-                    const int dist =  DescriptorDistance(dKF,dF);
+                    const int dist = ORBmatcher_DescriptorDistance(dKF,dF);
 
                     if(dist<bestDist1)
                     {
@@ -227,13 +231,13 @@ int ORBmatcher::SearchByBoW(KeyFrame* pKF,Frame &F, vector<MapPoint*> &vpMapPoin
 
                 if(bestDist1<=TH_LOW)
                 {
-                    if(static_cast<float>(bestDist1)<mfNNratio*static_cast<float>(bestDist2))
+                    if(static_cast<float>(bestDist1)<mpORBmatcher->mfNNratio*static_cast<float>(bestDist2))
                     {
                         vpMapPointMatches[bestIdxF]=pMP;
 
                         const cv::KeyPoint &kp = pKF->mvKeysUn[realIdxKF];
 
-                        if(mbCheckOrientation)
+                        if(mpORBmatcher->mbCheckOrientation)
                         {
                             float rot = kp.angle-F.mvKeys[bestIdxF].angle;
                             if(rot<0.0)
@@ -264,13 +268,13 @@ int ORBmatcher::SearchByBoW(KeyFrame* pKF,Frame &F, vector<MapPoint*> &vpMapPoin
     }
 
 
-    if(mbCheckOrientation)
+    if(mpORBmatcher->mbCheckOrientation)
     {
         int ind1=-1;
         int ind2=-1;
         int ind3=-1;
 
-        ComputeThreeMaxima(rotHist,HISTO_LENGTH,ind1,ind2,ind3);
+        ORBmatcher_ComputeThreeMaxima(mpORBmatcher,rotHist,HISTO_LENGTH,ind1,ind2,ind3);
 
         for(int i=0; i<HISTO_LENGTH; i++)
         {
@@ -287,7 +291,7 @@ int ORBmatcher::SearchByBoW(KeyFrame* pKF,Frame &F, vector<MapPoint*> &vpMapPoin
     return nmatches;
 }
 
-int ORBmatcher::SearchByProjection(KeyFrame* pKF, cv::Mat Scw, const vector<MapPoint*> &vpPoints, vector<MapPoint*> &vpMatched, int th)
+int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,KeyFrame* pKF, cv::Mat Scw, const vector<MapPoint*> &vpPoints, vector<MapPoint*> &vpMatched, int th)
 {
     // Get Calibration Parameters for later projection
     const float &fx = pKF->fx;
@@ -382,7 +386,7 @@ int ORBmatcher::SearchByProjection(KeyFrame* pKF, cv::Mat Scw, const vector<MapP
 
             const cv::Mat &dKF = pKF->mDescriptors.row(idx);
 
-            const int dist = DescriptorDistance(dMP,dKF);
+            const int dist = ORBmatcher_DescriptorDistance(dMP,dKF);
 
             if(dist<bestDist)
             {
@@ -402,7 +406,7 @@ int ORBmatcher::SearchByProjection(KeyFrame* pKF, cv::Mat Scw, const vector<MapP
     return nmatches;
 }
 
-int ORBmatcher::SearchForInitialization(Frame &F1, Frame &F2, vector<cv::Point2f> &vbPrevMatched, vector<int> &vnMatches12, int windowSize)
+int ORBmatcher_SearchForInitialization(ORBmatcher* mpORBmatcher,Frame &F1, Frame &F2, vector<cv::Point2f> &vbPrevMatched, vector<int> &vnMatches12, int windowSize)
 {
     int nmatches=0;
     vnMatches12 = vector<int>(F1.mvKeysUn.size(),-1);
@@ -439,7 +443,7 @@ int ORBmatcher::SearchForInitialization(Frame &F1, Frame &F2, vector<cv::Point2f
 
             cv::Mat d2 = F2.mDescriptors.row(i2);
 
-            int dist = DescriptorDistance(d1,d2);
+            int dist = ORBmatcher_DescriptorDistance(d1,d2);
 
             if(vMatchedDistance[i2]<=dist)
                 continue;
@@ -458,7 +462,7 @@ int ORBmatcher::SearchForInitialization(Frame &F1, Frame &F2, vector<cv::Point2f
 
         if(bestDist<=TH_LOW)
         {
-            if(bestDist<(float)bestDist2*mfNNratio)
+            if(bestDist<(float)bestDist2*mpORBmatcher->mfNNratio)
             {
                 if(vnMatches21[bestIdx2]>=0)
                 {
@@ -470,7 +474,7 @@ int ORBmatcher::SearchForInitialization(Frame &F1, Frame &F2, vector<cv::Point2f
                 vMatchedDistance[bestIdx2]=bestDist;
                 nmatches++;
 
-                if(mbCheckOrientation)
+                if(mpORBmatcher->mbCheckOrientation)
                 {
                     float rot = F1.mvKeysUn[i1].angle-F2.mvKeysUn[bestIdx2].angle;
                     if(rot<0.0)
@@ -486,13 +490,13 @@ int ORBmatcher::SearchForInitialization(Frame &F1, Frame &F2, vector<cv::Point2f
 
     }
 
-    if(mbCheckOrientation)
+    if(mpORBmatcher->mbCheckOrientation)
     {
         int ind1=-1;
         int ind2=-1;
         int ind3=-1;
 
-        ComputeThreeMaxima(rotHist,HISTO_LENGTH,ind1,ind2,ind3);
+        ORBmatcher_ComputeThreeMaxima(mpORBmatcher,rotHist,HISTO_LENGTH,ind1,ind2,ind3);
 
         for(int i=0; i<HISTO_LENGTH; i++)
         {
@@ -519,7 +523,7 @@ int ORBmatcher::SearchForInitialization(Frame &F1, Frame &F2, vector<cv::Point2f
     return nmatches;
 }
 
-int ORBmatcher::SearchByBoW(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint *> &vpMatches12)
+int ORBmatcher_SearchByBoW(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint *> &vpMatches12)
 {
     const vector<cv::KeyPoint> &vKeysUn1 = pKF1->mvKeysUn;
     const DBoW2::FeatureVector &vFeatVec1 = pKF1->mFeatVec;
@@ -581,7 +585,7 @@ int ORBmatcher::SearchByBoW(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint *> &
 
                     const cv::Mat &d2 = Descriptors2.row(idx2);
 
-                    int dist = DescriptorDistance(d1,d2);
+                    int dist = ORBmatcher_DescriptorDistance(d1,d2);
 
                     if(dist<bestDist1)
                     {
@@ -597,12 +601,12 @@ int ORBmatcher::SearchByBoW(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint *> &
 
                 if(bestDist1<TH_LOW)
                 {
-                    if(static_cast<float>(bestDist1)<mfNNratio*static_cast<float>(bestDist2))
+                    if(static_cast<float>(bestDist1)<mpORBmatcher->mfNNratio*static_cast<float>(bestDist2))
                     {
                         vpMatches12[idx1]=vpMapPoints2[bestIdx2];
                         vbMatched2[bestIdx2]=true;
 
-                        if(mbCheckOrientation)
+                        if(mpORBmatcher->mbCheckOrientation)
                         {
                             float rot = vKeysUn1[idx1].angle-vKeysUn2[bestIdx2].angle;
                             if(rot<0.0)
@@ -631,13 +635,13 @@ int ORBmatcher::SearchByBoW(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint *> &
         }
     }
 
-    if(mbCheckOrientation)
+    if(mpORBmatcher->mbCheckOrientation)
     {
         int ind1=-1;
         int ind2=-1;
         int ind3=-1;
 
-        ComputeThreeMaxima(rotHist,HISTO_LENGTH,ind1,ind2,ind3);
+        ORBmatcher_ComputeThreeMaxima(mpORBmatcher,rotHist,HISTO_LENGTH,ind1,ind2,ind3);
 
         for(int i=0; i<HISTO_LENGTH; i++)
         {
@@ -654,7 +658,7 @@ int ORBmatcher::SearchByBoW(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint *> &
     return nmatches;
 }
 
-int ORBmatcher::SearchForTriangulation(KeyFrame *pKF1, KeyFrame *pKF2, cv::Mat F12,
+int ORBmatcher_SearchForTriangulation(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, KeyFrame *pKF2, cv::Mat F12,
                                        vector<pair<size_t, size_t> > &vMatchedPairs, const bool bOnlyStereo)
 {    
     const DBoW2::FeatureVector &vFeatVec1 = pKF1->mFeatVec;
@@ -733,7 +737,7 @@ int ORBmatcher::SearchForTriangulation(KeyFrame *pKF1, KeyFrame *pKF2, cv::Mat F
                     
                     const cv::Mat &d2 = pKF2->mDescriptors.row(idx2);
                     
-                    const int dist = DescriptorDistance(d1,d2);
+                    const int dist = ORBmatcher_DescriptorDistance(d1,d2);
                     
                     if(dist>TH_LOW || dist>bestDist)
                         continue;
@@ -748,7 +752,7 @@ int ORBmatcher::SearchForTriangulation(KeyFrame *pKF1, KeyFrame *pKF2, cv::Mat F
                             continue;
                     }
 
-                    if(CheckDistEpipolarLine(kp1,kp2,F12,pKF2))
+                    if(ORBmatcher_CheckDistEpipolarLine(mpORBmatcher,kp1,kp2,F12,pKF2))
                     {
                         bestIdx2 = idx2;
                         bestDist = dist;
@@ -761,7 +765,7 @@ int ORBmatcher::SearchForTriangulation(KeyFrame *pKF1, KeyFrame *pKF2, cv::Mat F
                     vMatches12[idx1]=bestIdx2;
                     nmatches++;
 
-                    if(mbCheckOrientation)
+                    if(mpORBmatcher->mbCheckOrientation)
                     {
                         float rot = kp1.angle-kp2.angle;
                         if(rot<0.0)
@@ -788,13 +792,13 @@ int ORBmatcher::SearchForTriangulation(KeyFrame *pKF1, KeyFrame *pKF2, cv::Mat F
         }
     }
 
-    if(mbCheckOrientation)
+    if(mpORBmatcher->mbCheckOrientation)
     {
         int ind1=-1;
         int ind2=-1;
         int ind3=-1;
 
-        ComputeThreeMaxima(rotHist,HISTO_LENGTH,ind1,ind2,ind3);
+        ORBmatcher_ComputeThreeMaxima(mpORBmatcher,rotHist,HISTO_LENGTH,ind1,ind2,ind3);
 
         for(int i=0; i<HISTO_LENGTH; i++)
         {
@@ -822,7 +826,7 @@ int ORBmatcher::SearchForTriangulation(KeyFrame *pKF1, KeyFrame *pKF2, cv::Mat F
     return nmatches;
 }
 
-int ORBmatcher::Fuse(KeyFrame *pKF, const vector<MapPoint *> &vpMapPoints, const float th)
+int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, const vector<MapPoint *> &vpMapPoints, const float th)
 {
     cv::Mat Rcw = pKF->GetRotation();
     cv::Mat tcw = pKF->GetTranslation();
@@ -939,7 +943,7 @@ int ORBmatcher::Fuse(KeyFrame *pKF, const vector<MapPoint *> &vpMapPoints, const
 
             const cv::Mat &dKF = pKF->mDescriptors.row(idx);
 
-            const int dist = DescriptorDistance(dMP,dKF);
+            const int dist = ORBmatcher_DescriptorDistance(dMP,dKF);
 
             if(dist<bestDist)
             {
@@ -974,7 +978,7 @@ int ORBmatcher::Fuse(KeyFrame *pKF, const vector<MapPoint *> &vpMapPoints, const
     return nFused;
 }
 
-int ORBmatcher::Fuse(KeyFrame *pKF, cv::Mat Scw, const vector<MapPoint *> &vpPoints, float th, vector<MapPoint *> &vpReplacePoint)
+int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, cv::Mat Scw, const vector<MapPoint *> &vpPoints, float th, vector<MapPoint *> &vpReplacePoint)
 {
     // Get Calibration Parameters for later projection
     const float &fx = pKF->fx;
@@ -1069,7 +1073,7 @@ int ORBmatcher::Fuse(KeyFrame *pKF, cv::Mat Scw, const vector<MapPoint *> &vpPoi
 
             const cv::Mat &dKF = pKF->mDescriptors.row(idx);
 
-            int dist = DescriptorDistance(dMP,dKF);
+            int dist = ORBmatcher_DescriptorDistance(dMP,dKF);
 
             if(dist<bestDist)
             {
@@ -1099,7 +1103,7 @@ int ORBmatcher::Fuse(KeyFrame *pKF, cv::Mat Scw, const vector<MapPoint *> &vpPoi
     return nFused;
 }
 
-int ORBmatcher::SearchBySim3(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint*> &vpMatches12,
+int ORBmatcher_SearchBySim3(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint*> &vpMatches12,
                              const float &s12, const cv::Mat &R12, const cv::Mat &t12, const float th)
 {
     const float &fx = pKF1->fx;
@@ -1209,7 +1213,7 @@ int ORBmatcher::SearchBySim3(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint*> &
 
             const cv::Mat &dKF = pKF2->mDescriptors.row(idx);
 
-            const int dist = DescriptorDistance(dMP,dKF);
+            const int dist = ORBmatcher_DescriptorDistance(dMP,dKF);
 
             if(dist<bestDist)
             {
@@ -1289,7 +1293,7 @@ int ORBmatcher::SearchBySim3(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint*> &
 
             const cv::Mat &dKF = pKF1->mDescriptors.row(idx);
 
-            const int dist = DescriptorDistance(dMP,dKF);
+            const int dist = ORBmatcher_DescriptorDistance(dMP,dKF);
 
             if(dist<bestDist)
             {
@@ -1325,7 +1329,7 @@ int ORBmatcher::SearchBySim3(KeyFrame *pKF1, KeyFrame *pKF2, vector<MapPoint*> &
     return nFound;
 }
 
-int ORBmatcher::SearchByProjection(Frame &CurrentFrame, const Frame &LastFrame, const float th, const bool bMono)
+int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame &CurrentFrame, const Frame &LastFrame, const float th, const bool bMono)
 {
     int nmatches = 0;
 
@@ -1414,7 +1418,7 @@ int ORBmatcher::SearchByProjection(Frame &CurrentFrame, const Frame &LastFrame, 
 
                     const cv::Mat &d = CurrentFrame.mDescriptors.row(i2);
 
-                    const int dist = DescriptorDistance(dMP,d);
+                    const int dist = ORBmatcher_DescriptorDistance(dMP,d);
 
                     if(dist<bestDist)
                     {
@@ -1428,7 +1432,7 @@ int ORBmatcher::SearchByProjection(Frame &CurrentFrame, const Frame &LastFrame, 
                     CurrentFrame.mvpMapPoints[bestIdx2]=pMP;
                     nmatches++;
 
-                    if(mbCheckOrientation)
+                    if(mpORBmatcher->mbCheckOrientation)
                     {
                         float rot = LastFrame.mvKeysUn[i].angle-CurrentFrame.mvKeysUn[bestIdx2].angle;
                         if(rot<0.0)
@@ -1445,13 +1449,13 @@ int ORBmatcher::SearchByProjection(Frame &CurrentFrame, const Frame &LastFrame, 
     }
 
     //Apply rotation consistency
-    if(mbCheckOrientation)
+    if(mpORBmatcher->mbCheckOrientation)
     {
         int ind1=-1;
         int ind2=-1;
         int ind3=-1;
 
-        ComputeThreeMaxima(rotHist,HISTO_LENGTH,ind1,ind2,ind3);
+        ORBmatcher_ComputeThreeMaxima(mpORBmatcher,rotHist,HISTO_LENGTH,ind1,ind2,ind3);
 
         for(int i=0; i<HISTO_LENGTH; i++)
         {
@@ -1469,7 +1473,7 @@ int ORBmatcher::SearchByProjection(Frame &CurrentFrame, const Frame &LastFrame, 
     return nmatches;
 }
 
-int ORBmatcher::SearchByProjection(Frame &CurrentFrame, KeyFrame *pKF, const set<MapPoint*> &sAlreadyFound, const float th , const int ORBdist)
+int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame &CurrentFrame, KeyFrame *pKF, const set<MapPoint*> &sAlreadyFound, const float th , const int ORBdist)
 {
     int nmatches = 0;
 
@@ -1543,7 +1547,7 @@ int ORBmatcher::SearchByProjection(Frame &CurrentFrame, KeyFrame *pKF, const set
 
                     const cv::Mat &d = CurrentFrame.mDescriptors.row(i2);
 
-                    const int dist = DescriptorDistance(dMP,d);
+                    const int dist = ORBmatcher_DescriptorDistance(dMP,d);
 
                     if(dist<bestDist)
                     {
@@ -1557,7 +1561,7 @@ int ORBmatcher::SearchByProjection(Frame &CurrentFrame, KeyFrame *pKF, const set
                     CurrentFrame.mvpMapPoints[bestIdx2]=pMP;
                     nmatches++;
 
-                    if(mbCheckOrientation)
+                    if(mpORBmatcher->mbCheckOrientation)
                     {
                         float rot = pKF->mvKeysUn[i].angle-CurrentFrame.mvKeysUn[bestIdx2].angle;
                         if(rot<0.0)
@@ -1574,13 +1578,13 @@ int ORBmatcher::SearchByProjection(Frame &CurrentFrame, KeyFrame *pKF, const set
         }
     }
 
-    if(mbCheckOrientation)
+    if(mpORBmatcher->mbCheckOrientation)
     {
         int ind1=-1;
         int ind2=-1;
         int ind3=-1;
 
-        ComputeThreeMaxima(rotHist,HISTO_LENGTH,ind1,ind2,ind3);
+        ORBmatcher_ComputeThreeMaxima(mpORBmatcher,rotHist,HISTO_LENGTH,ind1,ind2,ind3);
 
         for(int i=0; i<HISTO_LENGTH; i++)
         {
@@ -1598,7 +1602,7 @@ int ORBmatcher::SearchByProjection(Frame &CurrentFrame, KeyFrame *pKF, const set
     return nmatches;
 }
 
-void ORBmatcher::ComputeThreeMaxima(vector<int>* histo, const int L, int &ind1, int &ind2, int &ind3)
+void ORBmatcher_ComputeThreeMaxima(ORBmatcher* mpORBmatcher,vector<int>* histo, const int L, int &ind1, int &ind2, int &ind3)
 {
     int max1=0;
     int max2=0;
@@ -1644,7 +1648,7 @@ void ORBmatcher::ComputeThreeMaxima(vector<int>* histo, const int L, int &ind1, 
 
 // Bit set count operation from
 // http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
-int ORBmatcher::DescriptorDistance(const cv::Mat &a, const cv::Mat &b)
+int ORBmatcher_DescriptorDistance(const cv::Mat &a, const cv::Mat &b)
 {
     const int *pa = a.ptr<int32_t>();
     const int *pb = b.ptr<int32_t>();

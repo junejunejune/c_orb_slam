@@ -236,7 +236,11 @@ bool LoopClosing::ComputeSim3()
 
     // We compute first ORB matches for each candidate
     // If enough matches are found, we setup a Sim3Solver
-    ORBmatcher matcher(0.75,true);
+//    ORBmatcher matcher(0.75,true);
+    struct ORBmatcher sORBmatcher;
+    ORBmatcher *matcher = &sORBmatcher;
+    ORBmatcher_init(matcher, 0.75, true);          
+  
 
     vector<Sim3Solver*> vpSim3Solvers;
     vpSim3Solvers.resize(nInitialCandidates);
@@ -262,7 +266,7 @@ bool LoopClosing::ComputeSim3()
             continue;
         }
 
-        int nmatches = matcher.SearchByBoW(mpCurrentKF,pKF,vvpMapPointMatches[i]);
+        int nmatches = ORBmatcher_SearchByBoW(matcher, mpCurrentKF,pKF,vvpMapPointMatches[i]);
 
         if(nmatches<20)
         {
@@ -320,7 +324,7 @@ bool LoopClosing::ComputeSim3()
                 cv::Mat R = pSolver->GetEstimatedRotation();
                 cv::Mat t = pSolver->GetEstimatedTranslation();
                 const float s = pSolver->GetEstimatedScale();
-                matcher.SearchBySim3(mpCurrentKF,pKF,vpMapPointMatches,s,R,t,7.5);
+                ORBmatcher_SearchBySim3(matcher, mpCurrentKF,pKF,vpMapPointMatches,s,R,t,7.5);
 
                 g2o::Sim3 gScm(Converter::toMatrix3d(R),Converter::toVector3d(t),s);
                 const int nInliers = Optimizer::OptimizeSim3(mpCurrentKF, pKF, vpMapPointMatches, gScm, 10, mbFixScale);
@@ -372,7 +376,7 @@ bool LoopClosing::ComputeSim3()
     }
 
     // Find more matches projecting with the computed Sim3
-    matcher.SearchByProjection(mpCurrentKF, mScw, mvpLoopMapPoints, mvpCurrentMatchedPoints,10);
+    ORBmatcher_SearchByProjection(matcher, mpCurrentKF, mScw, mvpLoopMapPoints, mvpCurrentMatchedPoints,10);
 
     // If enough matches accept Loop
     int nTotalMatches = 0;
@@ -586,7 +590,11 @@ void LoopClosing::CorrectLoop()
 
 void LoopClosing::SearchAndFuse(const KeyFrameAndPose &CorrectedPosesMap)
 {
-    ORBmatcher matcher(0.8);
+   // ORBmatcher matcher(0.8);
+    struct ORBmatcher sORBmatcher;
+    ORBmatcher *matcher = &sORBmatcher;
+    ORBmatcher_init(matcher, 0.8, true);          
+  
 
     for(KeyFrameAndPose::const_iterator mit=CorrectedPosesMap.begin(), mend=CorrectedPosesMap.end(); mit!=mend;mit++)
     {
@@ -596,7 +604,7 @@ void LoopClosing::SearchAndFuse(const KeyFrameAndPose &CorrectedPosesMap)
         cv::Mat cvScw = Converter::toCvMat(g2oScw);
 
         vector<MapPoint*> vpReplacePoints(mvpLoopMapPoints.size(),static_cast<MapPoint*>(NULL));
-        matcher.Fuse(pKF,cvScw,mvpLoopMapPoints,4,vpReplacePoints);
+        ORBmatcher_Fuse(matcher, pKF,cvScw,mvpLoopMapPoints,4,vpReplacePoints);
 
         // Get Map Mutex
         unique_lock<mutex> lock(mpMap->mMutexMapUpdate);

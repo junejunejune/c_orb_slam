@@ -212,7 +212,11 @@ void LocalMapping::CreateNewMapPoints()
         nn=20;
     const vector<KeyFrame*> vpNeighKFs = mpCurrentKeyFrame->GetBestCovisibilityKeyFrames(nn);
 
-    ORBmatcher matcher(0.6,false);
+   // ORBmatcher matcher(0.6,false);
+    struct ORBmatcher sORBmatcher;
+    ORBmatcher *matcher = &sORBmatcher;
+    ORBmatcher_init(matcher, 0.6, true);          
+  
 
     cv::Mat Rcw1 = mpCurrentKeyFrame->GetRotation();
     cv::Mat Rwc1 = Rcw1.t();
@@ -265,7 +269,7 @@ void LocalMapping::CreateNewMapPoints()
 
         // Search matches that fullfil epipolar constraint
         vector<pair<size_t,size_t> > vMatchedIndices;
-        matcher.SearchForTriangulation(mpCurrentKeyFrame,pKF2,F12,vMatchedIndices,false);
+        ORBmatcher_SearchForTriangulation(matcher, mpCurrentKeyFrame,pKF2,F12,vMatchedIndices,false);
 
         cv::Mat Rcw2 = pKF2->GetRotation();
         cv::Mat Rwc2 = Rcw2.t();
@@ -480,13 +484,18 @@ void LocalMapping::SearchInNeighbors()
 
 
     // Search matches by projection from current KF in target KFs
-    ORBmatcher matcher;
+    //ORBmatcher matcher;
+    struct ORBmatcher sORBmatcher;
+    ORBmatcher *matcher = &sORBmatcher;
+    ORBmatcher_init(matcher, 0.9, true);          
+  
+
     vector<MapPoint*> vpMapPointMatches = mpCurrentKeyFrame->GetMapPointMatches();
     for(vector<KeyFrame*>::iterator vit=vpTargetKFs.begin(), vend=vpTargetKFs.end(); vit!=vend; vit++)
     {
         KeyFrame* pKFi = *vit;
 
-        matcher.Fuse(pKFi,vpMapPointMatches);
+        ORBmatcher_Fuse(matcher, pKFi,vpMapPointMatches);
     }
 
     // Search matches by projection from target KFs in current KF
@@ -511,7 +520,7 @@ void LocalMapping::SearchInNeighbors()
         }
     }
 
-    matcher.Fuse(mpCurrentKeyFrame,vpFuseCandidates);
+    ORBmatcher_Fuse(matcher, mpCurrentKeyFrame,vpFuseCandidates);
 
 
     // Update points

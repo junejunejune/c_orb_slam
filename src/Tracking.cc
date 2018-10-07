@@ -599,8 +599,12 @@ void Tracking::MonocularInitialization()
         }
 
         // Find correspondences
-        ORBmatcher matcher(0.9,true);
-        int nmatches = matcher.SearchForInitialization(mInitialFrame,mCurrentFrame,mvbPrevMatched,mvIniMatches,100);
+        // ORBmatcher matcher(0.9,true);
+        struct ORBmatcher sORBmatcher;
+        ORBmatcher *matcher = &sORBmatcher;
+        ORBmatcher_init(matcher, 0.9, true);          
+        
+        int nmatches = ORBmatcher_SearchForInitialization(matcher, mInitialFrame,mCurrentFrame,mvbPrevMatched,mvIniMatches,100);
 
         // Check if there are enough correspondences
         if(nmatches<100)
@@ -764,10 +768,15 @@ bool Tracking::TrackReferenceKeyFrame()
 
     // We perform first an ORB matching with the reference keyframe
     // If enough matches are found we setup a PnP solver
-    ORBmatcher matcher(0.7,true);
+    //ORBmatcher matcher(0.7,true);
+    struct ORBmatcher sORBmatcher;
+    ORBmatcher *matcher = &sORBmatcher;
+    ORBmatcher_init(matcher, 0.7, true);          
+        
+   
     vector<MapPoint*> vpMapPointMatches;
 
-    int nmatches = matcher.SearchByBoW(mpReferenceKF,mCurrentFrame,vpMapPointMatches);
+    int nmatches = ORBmatcher_SearchByBoW(matcher, mpReferenceKF,mCurrentFrame,vpMapPointMatches);
 
     if(nmatches<15)
         return false;
@@ -869,8 +878,11 @@ void Tracking::UpdateLastFrame()
 
 bool Tracking::TrackWithMotionModel()
 {
-    ORBmatcher matcher(0.9,true);
-
+ //   ORBmatcher matcher(0.9,true);
+    struct ORBmatcher sORBmatcher;
+    ORBmatcher *matcher = &sORBmatcher;
+    ORBmatcher_init(matcher, 0.9, true);          
+  
     // Update last frame pose according to its reference keyframe
     // Create "visual odometry" points if in Localization Mode
     UpdateLastFrame();
@@ -885,13 +897,13 @@ bool Tracking::TrackWithMotionModel()
         th=15;
     else
         th=7;
-    int nmatches = matcher.SearchByProjection(mCurrentFrame,mLastFrame,th,mSensor==System::MONOCULAR);
+    int nmatches = ORBmatcher_SearchByProjection(matcher, mCurrentFrame,mLastFrame,th,mSensor==System::MONOCULAR);
 
     // If few matches, uses a wider window search
     if(nmatches<20)
     {
         fill(mCurrentFrame.mvpMapPoints.begin(),mCurrentFrame.mvpMapPoints.end(),static_cast<MapPoint*>(NULL));
-        nmatches = matcher.SearchByProjection(mCurrentFrame,mLastFrame,2*th,mSensor==System::MONOCULAR);
+        nmatches = ORBmatcher_SearchByProjection(matcher, mCurrentFrame,mLastFrame,2*th,mSensor==System::MONOCULAR);
     }
 
     if(nmatches<20)
@@ -1184,14 +1196,18 @@ void Tracking::SearchLocalPoints()
 
     if(nToMatch>0)
     {
-        ORBmatcher matcher(0.8);
+       // ORBmatcher matcher(0.8);
+        struct ORBmatcher sORBmatcher;
+        ORBmatcher *matcher = &sORBmatcher;
+        ORBmatcher_init(matcher, 0.8, true);          
+  
         int th = 1;
         if(mSensor==System::RGBD)
             th=3;
         // If the camera has been relocalised recently, perform a coarser search
         if(mCurrentFrame.mnId<mnLastRelocFrameId+2)
             th=5;
-        matcher.SearchByProjection(mCurrentFrame,mvpLocalMapPoints,th);
+        ORBmatcher_SearchByProjection(matcher, mCurrentFrame,mvpLocalMapPoints,th);
     }
 }
 
@@ -1357,7 +1373,11 @@ bool Tracking::Relocalization()
 
     // We perform first an ORB matching with each candidate
     // If enough matches are found we setup a PnP solver
-    ORBmatcher matcher(0.75,true);
+   // ORBmatcher matcher(0.75,true);
+    struct ORBmatcher sORBmatcher;
+    ORBmatcher *matcher = &sORBmatcher;
+    ORBmatcher_init(matcher, 0.75, true);          
+  
 
     vector<PnPsolver*> vpPnPsolvers;
     vpPnPsolvers.resize(nKFs);
@@ -1377,7 +1397,7 @@ bool Tracking::Relocalization()
             vbDiscarded[i] = true;
         else
         {
-            int nmatches = matcher.SearchByBoW(pKF,mCurrentFrame,vvpMapPointMatches[i]);
+            int nmatches = ORBmatcher_SearchByBoW(matcher, pKF,mCurrentFrame,vvpMapPointMatches[i]);
             if(nmatches<15)
             {
                 vbDiscarded[i] = true;
@@ -1396,7 +1416,11 @@ bool Tracking::Relocalization()
     // Alternatively perform some iterations of P4P RANSAC
     // Until we found a camera pose supported by enough inliers
     bool bMatch = false;
-    ORBmatcher matcher2(0.9,true);
+//    ORBmatcher matcher2(0.9,true);
+    struct ORBmatcher sORBmatcher2;
+    ORBmatcher *matcher2 = &sORBmatcher2;
+    ORBmatcher_init(matcher2, 0.9, true);          
+  
 
     while(nCandidates>0 && !bMatch)
     {
@@ -1452,7 +1476,7 @@ bool Tracking::Relocalization()
                 // If few inliers, search by projection in a coarse window and optimize again
                 if(nGood<50)
                 {
-                    int nadditional =matcher2.SearchByProjection(mCurrentFrame,vpCandidateKFs[i],sFound,10,100);
+                    int nadditional =ORBmatcher_SearchByProjection(matcher2, mCurrentFrame,vpCandidateKFs[i],sFound,10,100);
 
                     if(nadditional+nGood>=50)
                     {
@@ -1466,7 +1490,7 @@ bool Tracking::Relocalization()
                             for(int ip =0; ip<mCurrentFrame.N; ip++)
                                 if(mCurrentFrame.mvpMapPoints[ip])
                                     sFound.insert(mCurrentFrame.mvpMapPoints[ip]);
-                            nadditional =matcher2.SearchByProjection(mCurrentFrame,vpCandidateKFs[i],sFound,3,64);
+                            nadditional =ORBmatcher_SearchByProjection(matcher2,mCurrentFrame,vpCandidateKFs[i],sFound,3,64);
 
                             // Final optimization
                             if(nGood+nadditional>=50)

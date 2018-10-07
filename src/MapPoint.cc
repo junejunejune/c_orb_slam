@@ -278,7 +278,7 @@ void MapPoint::ComputeDistinctiveDescriptors()
         Distances[i][i]=0;
         for(size_t j=i+1;j<N;j++)
         {
-            int distij = ORBmatcher::DescriptorDistance(vDescriptors[i],vDescriptors[j]);
+            int distij = ORBmatcher_DescriptorDistance(vDescriptors[i],vDescriptors[j]);
             Distances[i][j]=distij;
             Distances[j][i]=distij;
         }
