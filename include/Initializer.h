@@ -28,12 +28,51 @@ namespace ORB_SLAM2
 {
 
 // THIS IS THE INITIALIZER FOR MONOCULAR SLAM. NOT USED IN THE STEREO OR RGBD CASE.
-struct Initializer
+class Initializer
 {
     typedef pair<int,int> Match;
 
+public:
+
     // Fix the reference frame
-     // Keypoints from Reference Frame (Frame 1)
+    Initializer(const Frame &ReferenceFrame, float sigma = 1.0, int iterations = 200);
+
+    // Computes in parallel a fundamental matrix and a homography
+    // Selects a model and tries to recover the motion and the structure from motion
+    bool Initialize(const Frame &CurrentFrame, const vector<int> &vMatches12,
+                    cv::Mat &R21, cv::Mat &t21, vector<cv::Point3f> &vP3D, vector<bool> &vbTriangulated);
+
+
+private:
+
+    void FindHomography(vector<bool> &vbMatchesInliers, float &score, cv::Mat &H21);
+    void FindFundamental(vector<bool> &vbInliers, float &score, cv::Mat &F21);
+
+    cv::Mat ComputeH21(const vector<cv::Point2f> &vP1, const vector<cv::Point2f> &vP2);
+    cv::Mat ComputeF21(const vector<cv::Point2f> &vP1, const vector<cv::Point2f> &vP2);
+
+    float CheckHomography(const cv::Mat &H21, const cv::Mat &H12, vector<bool> &vbMatchesInliers, float sigma);
+
+    float CheckFundamental(const cv::Mat &F21, vector<bool> &vbMatchesInliers, float sigma);
+
+    bool ReconstructF(vector<bool> &vbMatchesInliers, cv::Mat &F21, cv::Mat &K,
+                      cv::Mat &R21, cv::Mat &t21, vector<cv::Point3f> &vP3D, vector<bool> &vbTriangulated, float minParallax, int minTriangulated);
+
+    bool ReconstructH(vector<bool> &vbMatchesInliers, cv::Mat &H21, cv::Mat &K,
+                      cv::Mat &R21, cv::Mat &t21, vector<cv::Point3f> &vP3D, vector<bool> &vbTriangulated, float minParallax, int minTriangulated);
+
+    void Triangulate(const cv::KeyPoint &kp1, const cv::KeyPoint &kp2, const cv::Mat &P1, const cv::Mat &P2, cv::Mat &x3D);
+
+    void Normalize(const vector<cv::KeyPoint> &vKeys, vector<cv::Point2f> &vNormalizedPoints, cv::Mat &T);
+
+    int CheckRT(const cv::Mat &R, const cv::Mat &t, const vector<cv::KeyPoint> &vKeys1, const vector<cv::KeyPoint> &vKeys2,
+                       const vector<Match> &vMatches12, vector<bool> &vbInliers,
+                       const cv::Mat &K, vector<cv::Point3f> &vP3D, float th2, vector<bool> &vbGood, float &parallax);
+
+    void DecomposeE(const cv::Mat &E, cv::Mat &R1, cv::Mat &R2, cv::Mat &t);
+
+
+    // Keypoints from Reference Frame (Frame 1)
     vector<cv::KeyPoint> mvKeys1;
 
     // Keypoints from Current Frame (Frame 2)
@@ -56,40 +95,6 @@ struct Initializer
     vector<vector<size_t> > mvSets;   
 
 };
-    void Initializer_init(Initializer* mpInitializer, const Frame &ReferenceFrame, float sigma =1.0, int iterations=200 );
-
-    // Computes in parallel a fundamental matrix and a homography
-    // Selects a model and tries to recover the motion and the structure from motion
-    bool Initializer_Initialize(Initializer* mpInitializer, const Frame &CurrentFrame, const vector<int> &vMatches12,
-                    cv::Mat &R21, cv::Mat &t21, vector<cv::Point3f> &vP3D, vector<bool> &vbTriangulated);
-
-    void Initializer_FindHomography(Initializer* mpInitializer, vector<bool> &vbMatchesInliers, float &score, cv::Mat &H21);
-    void Initializer_FindFundamental(Initializer* mpInitializer, vector<bool> &vbInliers, float &score, cv::Mat &F21);
-
-    cv::Mat Initializer_ComputeH21(Initializer* mpInitializer, const vector<cv::Point2f> &vP1, const vector<cv::Point2f> &vP2);
-    cv::Mat Initializer_ComputeF21(Initializer* mpInitializer, const vector<cv::Point2f> &vP1, const vector<cv::Point2f> &vP2);
-
-    float Initializer_CheckHomography(Initializer* mpInitializer, const cv::Mat &H21, const cv::Mat &H12, vector<bool> &vbMatchesInliers, float sigma);
-
-    float Initializer_CheckFundamental(Initializer* mpInitializer, const cv::Mat &F21, vector<bool> &vbMatchesInliers, float sigma);
-
-    bool Initializer_ReconstructF(Initializer* mpInitializer, vector<bool> &vbMatchesInliers, cv::Mat &F21, cv::Mat &K,
-                      cv::Mat &R21, cv::Mat &t21, vector<cv::Point3f> &vP3D, vector<bool> &vbTriangulated, float minParallax, int minTriangulated);
-
-    bool Initializer_ReconstructH(Initializer* mpInitializer, vector<bool> &vbMatchesInliers, cv::Mat &H21, cv::Mat &K,
-                      cv::Mat &R21, cv::Mat &t21, vector<cv::Point3f> &vP3D, vector<bool> &vbTriangulated, float minParallax, int minTriangulated);
-
-    void Initializer_Triangulate(Initializer* mpInitializer, const cv::KeyPoint &kp1, const cv::KeyPoint &kp2, const cv::Mat &P1, const cv::Mat &P2, cv::Mat &x3D);
-
-    void Initializer_Normalize(Initializer* mpInitializer, const vector<cv::KeyPoint> &vKeys, vector<cv::Point2f> &vNormalizedPoints, cv::Mat &T);
-
-    int Initializer_CheckRT(Initializer* mpInitializer, const cv::Mat &R, const cv::Mat &t, const vector<cv::KeyPoint> &vKeys1, const vector<cv::KeyPoint> &vKeys2,
-                       const vector<pair<int,int>> &vMatches12, vector<bool> &vbInliers,
-                       const cv::Mat &K, vector<cv::Point3f> &vP3D, float th2, vector<bool> &vbGood, float &parallax);
-
-    void Initializer_DecomposeE(Initializer* mpInitializer, const cv::Mat &E, cv::Mat &R1, cv::Mat &R2, cv::Mat &t);
-
-
 
 } //namespace ORB_SLAM
 
