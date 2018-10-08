@@ -1534,9 +1534,11 @@ void Tracking::Reset()
     cout << "System Reseting" << endl;
     if(mpViewer)
     {
-        Viewer_RequestStop(mpViewer);
-        while(!Viewer_isStopped(mpViewer))
-            usleep(3000);
+       // Viewer_RequestStop(mpViewer);
+       // while(!Viewer_isStopped(mpViewer))
+        mpViewer->RequestStop();
+        while(!mpViewer->isStopped())
+          usleep(3000);
     }
 
     // Reset Local Mapping
@@ -1573,7 +1575,8 @@ void Tracking::Reset()
     mlbLost.clear();
 
     if(mpViewer)
-        Viewer_Release(mpViewer);
+      mpViewer->Release();
+       // Viewer_Release(mpViewer);
 }
 
 void Tracking::ChangeCalibration(const string &strSettingPath)

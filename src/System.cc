@@ -23,7 +23,7 @@
 #include "System.h"
 #include "Converter.h"
 #include <thread>
-//#include <pangolin/pangolin.h>
+#include <pangolin/pangolin.h>
 #include <iomanip>
 
 namespace ORB_SLAM2
@@ -93,16 +93,18 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     mpLoopCloser = new LoopClosing(mpMap, mpKeyFrameDatabase, mpVocabulary, mSensor!=MONOCULAR);
     mptLoopClosing = new thread(&ORB_SLAM2::LoopClosing::Run, mpLoopCloser);
  
-/*    //Initialize the Viewer thread and launch
+    //Initialize the Viewer thread and launch
     if(bUseViewer)
     {
-        struct Viewer sViewer;
-        Viewer *mpViewer = &sViewer;
-        Viewer_init(mpViewer,this, mpFrameDrawer,mpMapDrawer,mpTracker,strSettingsFile);
-        mptViewer = new thread(&Viewer_Run, mpViewer);
+      //  struct Viewer sViewer;
+      //  Viewer *mpViewer = &sViewer;
+      //  Viewer_init(mpViewer,this, mpFrameDrawer,mpMapDrawer,mpTracker,strSettingsFile);
+        mpViewer = new Viewer(this, mpFrameDrawer,mpMapDrawer,mpTracker,strSettingsFile);
+      //  mptViewer = new thread(&Viewer_Run, mpViewer);
+        mptViewer = new thread(&Viewer::Run, mpViewer);
         mpTracker->SetViewer(mpViewer);
     }
-*/
+
    //Set pointers between threads
     mpTracker->SetLocalMapper(mpLocalMapper);
     mpTracker->SetLoopClosing(mpLoopCloser);
@@ -305,9 +307,11 @@ void System::Shutdown()
     mpLoopCloser->RequestFinish();
     if(mpViewer)
     {
-        Viewer_RequestFinish(mpViewer);
-        while(!Viewer_isFinished(mpViewer))
-            usleep(5000);
+     // Viewer_RequestFinish(mpViewer);
+     //   while(!Viewer_isFinished(mpViewer))
+      mpViewer->RequestFinish();
+      while(!mpViewer->isFinished())
+        usleep(5000);
     }
 
     delete mpViewer;
@@ -318,10 +322,10 @@ void System::Shutdown()
     {
         usleep(5000);
     }
-/*
+
     if(mpViewer)
         pangolin::BindToContext("ORB-SLAM2: Map Viewer");
-*/
+
 }
 
 void System::SaveTrajectoryTUM(const string &filename)
