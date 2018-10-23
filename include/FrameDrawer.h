@@ -37,20 +37,8 @@ namespace ORB_SLAM2
 class Tracking;
 class Viewer;
 
-class FrameDrawer
+struct FrameDrawer
 {
-public:
-    FrameDrawer(Map* pMap);
-
-    // Update info from the last processed frame.
-    void Update(Tracking *pTracker);
-
-    // Draw last processed frame.
-    cv::Mat DrawFrame();
-
-protected:
-
-    void DrawTextInfo(cv::Mat &im, int nState, cv::Mat &imText);
 
     // Info of the frame to be drawn
     cv::Mat mIm;
@@ -67,6 +55,15 @@ protected:
 
     std::mutex mMutex;
 };
+    void FrameDrawer_init(FrameDrawer* pFD, Map* pMap);
+    // Update info from the last processed frame.
+    void FrameDrawer_Update(FrameDrawer* pFD, Tracking *pTracker);
+
+    // Draw last processed frame.
+    cv::Mat FrameDrawer_DrawFrame(FrameDrawer* pFD);
+
+    void FrameDrawer_DrawTextInfo(FrameDrawer* pFD, cv::Mat &im, int nState, cv::Mat &imText);
+
 
 } //namespace ORB_SLAM
 

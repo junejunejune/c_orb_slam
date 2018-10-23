@@ -283,7 +283,7 @@ void Tracking::Track()
         else
             MonocularInitialization();
 
-        mpFrameDrawer->Update(this);
+        FrameDrawer_Update(mpFrameDrawer,this);
 
         if(mState!=OK)
             return;
@@ -415,7 +415,7 @@ void Tracking::Track()
             mState=LOST;
 
         // Update drawer
-        mpFrameDrawer->Update(this);
+        FrameDrawer_Update(mpFrameDrawer, this);
 
         // If tracking were good, check if we insert a keyframe
         if(bOK)
