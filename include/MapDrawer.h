@@ -31,21 +31,10 @@
 namespace ORB_SLAM2
 {
 
-class MapDrawer
+struct MapDrawer
 {
-public:
-    MapDrawer(Map* pMap, const string &strSettingPath);
 
     Map* mpMap;
-
-    void DrawMapPoints();
-    void DrawKeyFrames(const bool bDrawKF, const bool bDrawGraph);
-    void DrawCurrentCamera(pangolin::OpenGlMatrix &Twc);
-    void SetCurrentCameraPose(const cv::Mat &Tcw);
-    void SetReferenceKeyFrame(KeyFrame *pKF);
-    void GetCurrentOpenGLCameraMatrix(pangolin::OpenGlMatrix &M);
-
-private:
 
     float mKeyFrameSize;
     float mKeyFrameLineWidth;
@@ -59,6 +48,15 @@ private:
     std::mutex mMutexCamera;
 };
 
-} //namespace ORB_SLAM
+    void MapDrawer_init(MapDrawer* pMD, Map* pMap, const string &strSettingPath);
+
+    void MapDrawer_DrawMapPoints(MapDrawer* pMD);
+    void MapDrawer_DrawKeyFrames(MapDrawer* pMD, const bool bDrawKF, const bool bDrawGraph);
+    void MapDrawer_DrawCurrentCamera(MapDrawer* pMD, pangolin::OpenGlMatrix &Twc);
+    void MapDrawer_SetCurrentCameraPose(MapDrawer* pMD, const cv::Mat &Tcw);
+    void MapDrawer_SetReferenceKeyFrame(MapDrawer* pMD, KeyFrame *pKF);
+    void MapDrawer_GetCurrentOpenGLCameraMatrix(MapDrawer* pMD, pangolin::OpenGlMatrix &M);
+}
+ //namespace ORB_SLAM
 
 #endif // MAPDRAWER_H

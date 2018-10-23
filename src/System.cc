@@ -28,8 +28,9 @@
 
 namespace ORB_SLAM2
 {
- struct FrameDrawer sFD;
 
+struct FrameDrawer sFD;
+struct MapDrawer sMD;
 System::System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor,
                const bool bUseViewer):mSensor(sensor), mpViewer(static_cast<Viewer*>(NULL)), mbReset(false),mbActivateLocalizationMode(false),
         mbDeactivateLocalizationMode(false)
@@ -83,8 +84,11 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     FrameDrawer* mpFrameDrawer = &sFD;
     FrameDrawer_init(mpFrameDrawer, mpMap);
 
-    mpMapDrawer = new MapDrawer(mpMap, strSettingsFile);
- 
+   // mpMapDrawer = new MapDrawer(mpMap, strSettingsFile);
+//    struct MapDrawer sMD;
+    MapDrawer* mpMapDrawer = &sMD;
+    MapDrawer_init(mpMapDrawer, mpMap, strSettingsFile);
+
     //Initialize the Tracking thread
     //(it will live in the main thread of execution, the one that called this constructor)
     mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawer, mpMapDrawer,

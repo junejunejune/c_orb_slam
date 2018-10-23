@@ -28,30 +28,31 @@ namespace ORB_SLAM2
 {
 
 
-MapDrawer::MapDrawer(Map* pMap, const string &strSettingPath):mpMap(pMap)
+void MapDrawer_init(MapDrawer* pMD, Map* pMap, const string &strSettingPath)
 {
+    pMD->mpMap=pMap;
     cv::FileStorage fSettings(strSettingPath, cv::FileStorage::READ);
 
-    mKeyFrameSize = fSettings["Viewer.KeyFrameSize"];
-    mKeyFrameLineWidth = fSettings["Viewer.KeyFrameLineWidth"];
-    mGraphLineWidth = fSettings["Viewer.GraphLineWidth"];
-    mPointSize = fSettings["Viewer.PointSize"];
-    mCameraSize = fSettings["Viewer.CameraSize"];
-    mCameraLineWidth = fSettings["Viewer.CameraLineWidth"];
+    pMD->mKeyFrameSize = fSettings["Viewer.KeyFrameSize"];
+    pMD->mKeyFrameLineWidth = fSettings["Viewer.KeyFrameLineWidth"];
+    pMD->mGraphLineWidth = fSettings["Viewer.GraphLineWidth"];
+    pMD->mPointSize = fSettings["Viewer.PointSize"];
+    pMD->mCameraSize = fSettings["Viewer.CameraSize"];
+    pMD->mCameraLineWidth = fSettings["Viewer.CameraLineWidth"];
 
 }
 
-void MapDrawer::DrawMapPoints()
+void MapDrawer_DrawMapPoints(MapDrawer* pMD)
 {
-    const vector<MapPoint*> &vpMPs = mpMap->GetAllMapPoints();
-    const vector<MapPoint*> &vpRefMPs = mpMap->GetReferenceMapPoints();
+    const vector<MapPoint*> &vpMPs = pMD->mpMap->GetAllMapPoints();
+    const vector<MapPoint*> &vpRefMPs = pMD->mpMap->GetReferenceMapPoints();
 
     set<MapPoint*> spRefMPs(vpRefMPs.begin(), vpRefMPs.end());
 
     if(vpMPs.empty())
         return;
 
-    glPointSize(mPointSize);
+    glPointSize(pMD->mPointSize);
     glBegin(GL_POINTS);
     glColor3f(0.0,0.0,0.0);
 
@@ -64,7 +65,7 @@ void MapDrawer::DrawMapPoints()
     }
     glEnd();
 
-    glPointSize(mPointSize);
+    glPointSize(pMD->mPointSize);
     glBegin(GL_POINTS);
     glColor3f(1.0,0.0,0.0);
 
@@ -80,13 +81,13 @@ void MapDrawer::DrawMapPoints()
     glEnd();
 }
 
-void MapDrawer::DrawKeyFrames(const bool bDrawKF, const bool bDrawGraph)
+void MapDrawer_DrawKeyFrames(MapDrawer* pMD, const bool bDrawKF, const bool bDrawGraph)
 {
-    const float &w = mKeyFrameSize;
+    const float &w = pMD->mKeyFrameSize;
     const float h = w*0.75;
     const float z = w*0.6;
 
-    const vector<KeyFrame*> vpKFs = mpMap->GetAllKeyFrames();
+    const vector<KeyFrame*> vpKFs = pMD->mpMap->GetAllKeyFrames();
 
     if(bDrawKF)
     {
@@ -99,7 +100,7 @@ void MapDrawer::DrawKeyFrames(const bool bDrawKF, const bool bDrawGraph)
 
             glMultMatrixf(Twc.ptr<GLfloat>(0));
 
-            glLineWidth(mKeyFrameLineWidth);
+            glLineWidth(pMD->mKeyFrameLineWidth);
             glColor3f(0.0f,0.0f,1.0f);
             glBegin(GL_LINES);
             glVertex3f(0,0,0);
@@ -130,7 +131,7 @@ void MapDrawer::DrawKeyFrames(const bool bDrawKF, const bool bDrawGraph)
 
     if(bDrawGraph)
     {
-        glLineWidth(mGraphLineWidth);
+        glLineWidth(pMD->mGraphLineWidth);
         glColor4f(0.0f,1.0f,0.0f,0.6f);
         glBegin(GL_LINES);
 
@@ -176,9 +177,9 @@ void MapDrawer::DrawKeyFrames(const bool bDrawKF, const bool bDrawGraph)
     }
 }
 
-void MapDrawer::DrawCurrentCamera(pangolin::OpenGlMatrix &Twc)
+void MapDrawer_DrawCurrentCamera(MapDrawer* pMD,pangolin::OpenGlMatrix &Twc)
 {
-    const float &w = mCameraSize;
+    const float &w = pMD->mCameraSize;
     const float h = w*0.75;
     const float z = w*0.6;
 
@@ -190,7 +191,7 @@ void MapDrawer::DrawCurrentCamera(pangolin::OpenGlMatrix &Twc)
         glMultMatrixd(Twc.m);
 #endif
 
-    glLineWidth(mCameraLineWidth);
+    glLineWidth(pMD->mCameraLineWidth);
     glColor3f(0.0f,1.0f,0.0f);
     glBegin(GL_LINES);
     glVertex3f(0,0,0);
@@ -219,22 +220,22 @@ void MapDrawer::DrawCurrentCamera(pangolin::OpenGlMatrix &Twc)
 }
 
 
-void MapDrawer::SetCurrentCameraPose(const cv::Mat &Tcw)
+void MapDrawer_SetCurrentCameraPose(MapDrawer* pMD,const cv::Mat &Tcw)
 {
-    unique_lock<mutex> lock(mMutexCamera);
-    mCameraPose = Tcw.clone();
+    unique_lock<mutex> lock(pMD->mMutexCamera);
+    pMD->mCameraPose = Tcw.clone();
 }
 
-void MapDrawer::GetCurrentOpenGLCameraMatrix(pangolin::OpenGlMatrix &M)
+void MapDrawer_GetCurrentOpenGLCameraMatrix(MapDrawer* pMD,pangolin::OpenGlMatrix &M)
 {
-    if(!mCameraPose.empty())
+    if(!pMD->mCameraPose.empty())
     {
         cv::Mat Rwc(3,3,CV_32F);
         cv::Mat twc(3,1,CV_32F);
         {
-            unique_lock<mutex> lock(mMutexCamera);
-            Rwc = mCameraPose.rowRange(0,3).colRange(0,3).t();
-            twc = -Rwc*mCameraPose.rowRange(0,3).col(3);
+            unique_lock<mutex> lock(pMD->mMutexCamera);
+            Rwc = pMD->mCameraPose.rowRange(0,3).colRange(0,3).t();
+            twc = -Rwc*pMD->mCameraPose.rowRange(0,3).col(3);
         }
 
         M.m[0] = Rwc.at<float>(0,0);
