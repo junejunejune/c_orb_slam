@@ -77,7 +77,7 @@ void LocalMapping::Run()
             if(!CheckNewKeyFrames() && !stopRequested())
             {
                 // Local BA
-                if(mpMap->KeyFramesInMap()>2)
+                if(Map_KeyFramesInMap(mpMap)>2)
                     Optimizer_LocalBundleAdjustment(mpCurrentKeyFrame,&mbAbortBA, mpMap);
 
                 // Check redundant local Keyframes
@@ -164,7 +164,7 @@ void LocalMapping::ProcessNewKeyFrame()
     mpCurrentKeyFrame->UpdateConnections();
 
     // Insert Keyframe in Map
-    mpMap->AddKeyFrame(mpCurrentKeyFrame);
+    Map_AddKeyFrame(mpMap,mpCurrentKeyFrame);
 }
 
 void LocalMapping::MapPointCulling()
@@ -447,7 +447,7 @@ void LocalMapping::CreateNewMapPoints()
 
             pMP->UpdateNormalAndDepth();
 
-            mpMap->AddMapPoint(pMP);
+            Map_AddMapPoint(mpMap,pMP);
             mlpRecentAddedMapPoints.push_back(pMP);
 
             nnew++;

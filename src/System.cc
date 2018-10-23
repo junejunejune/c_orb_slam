@@ -294,7 +294,7 @@ void System::DeactivateLocalizationMode()
 bool System::MapChanged()
 {
     static int n=0;
-    int curn = mpMap->GetLastBigChangeIdx();
+    int curn = Map_GetLastBigChangeIdx(mpMap);
     if(n<curn)
     {
         n=curn;
@@ -346,7 +346,7 @@ void System::SaveTrajectoryTUM(const string &filename)
         return;
     }
 
-    vector<KeyFrame*> vpKFs = mpMap->GetAllKeyFrames();
+    vector<KeyFrame*> vpKFs = Map_GetAllKeyFrames(mpMap);
     sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
 
     // Transform all keyframes so that the first keyframe is at the origin.
@@ -402,7 +402,7 @@ void System::SaveKeyFrameTrajectoryTUM(const string &filename)
 {
     cout << endl << "Saving keyframe trajectory to " << filename << " ..." << endl;
 
-    vector<KeyFrame*> vpKFs = mpMap->GetAllKeyFrames();
+    vector<KeyFrame*> vpKFs = Map_GetAllKeyFrames(mpMap);
     sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
 
     // Transform all keyframes so that the first keyframe is at the origin.
@@ -443,7 +443,7 @@ void System::SaveTrajectoryKITTI(const string &filename)
         return;
     }
 
-    vector<KeyFrame*> vpKFs = mpMap->GetAllKeyFrames();
+    vector<KeyFrame*> vpKFs = Map_GetAllKeyFrames(mpMap);
     sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
 
     // Transform all keyframes so that the first keyframe is at the origin.

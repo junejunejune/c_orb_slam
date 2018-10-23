@@ -471,7 +471,7 @@ void Tracking::Track()
         // Reset if the camera get lost soon after initialization
         if(mState==LOST)
         {
-            if(mpMap->KeyFramesInMap()<=5)
+            if(Map_KeyFramesInMap(mpMap)<=5)
             {
                 cout << "Track lost soon after initialisation, reseting..." << endl;
                 mpSystem->Reset();
@@ -517,7 +517,7 @@ void Tracking::StereoInitialization()
         KeyFrame* pKFini = new KeyFrame(mCurrentFrame,mpMap,mpKeyFrameDB);
 
         // Insert KeyFrame in the map
-        mpMap->AddKeyFrame(pKFini);
+        Map_AddKeyFrame(mpMap,pKFini);
 
         // Create MapPoints and asscoiate to KeyFrame
         for(int i=0; i<mCurrentFrame.N;i++)
@@ -531,13 +531,13 @@ void Tracking::StereoInitialization()
                 pKFini->AddMapPoint(pNewMP,i);
                 pNewMP->ComputeDistinctiveDescriptors();
                 pNewMP->UpdateNormalAndDepth();
-                mpMap->AddMapPoint(pNewMP);
+                Map_AddMapPoint(mpMap, pNewMP);
 
                 mCurrentFrame.mvpMapPoints[i]=pNewMP;
             }
         }
 
-        cout << "New map created with " << mpMap->MapPointsInMap() << " points" << endl;
+        cout << "New map created with " << Map_MapPointsInMap(mpMap) << " points" << endl;
 
         mpLocalMapper->InsertKeyFrame(pKFini);
 
@@ -546,11 +546,11 @@ void Tracking::StereoInitialization()
         mpLastKeyFrame = pKFini;
 
         mvpLocalKeyFrames.push_back(pKFini);
-        mvpLocalMapPoints=mpMap->GetAllMapPoints();
+        mvpLocalMapPoints=Map_GetAllMapPoints(mpMap);
         mpReferenceKF = pKFini;
         mCurrentFrame.mpReferenceKF = pKFini;
 
-        mpMap->SetReferenceMapPoints(mvpLocalMapPoints);
+        Map_SetReferenceMapPoints(mpMap,mvpLocalMapPoints);
 
         mpMap->mvpKeyFrameOrigins.push_back(pKFini);
 
@@ -652,8 +652,8 @@ void Tracking::CreateInitialMapMonocular()
     pKFcur->ComputeBoW();
 
     // Insert KFs in the map
-    mpMap->AddKeyFrame(pKFini);
-    mpMap->AddKeyFrame(pKFcur);
+    Map_AddKeyFrame(mpMap,pKFini);
+    Map_AddKeyFrame(mpMap,pKFcur);
 
     // Create MapPoints and asscoiate to keyframes
     for(size_t i=0; i<mvIniMatches.size();i++)
@@ -680,7 +680,7 @@ void Tracking::CreateInitialMapMonocular()
         mCurrentFrame.mvbOutlier[mvIniMatches[i]] = false;
 
         //Add to Map
-        mpMap->AddMapPoint(pMP);
+        Map_AddMapPoint(mpMap,pMP);
     }
 
     // Update Connections
@@ -688,7 +688,7 @@ void Tracking::CreateInitialMapMonocular()
     pKFcur->UpdateConnections();
 
     // Bundle Adjustment
-    cout << "New Map created with " << mpMap->MapPointsInMap() << " points" << endl;
+    cout << "New Map created with " << Map_MapPointsInMap(mpMap) << " points" << endl;
 
     Optimizer_GlobalBundleAdjustemnt(mpMap,20);
 
@@ -728,13 +728,13 @@ void Tracking::CreateInitialMapMonocular()
 
     mvpLocalKeyFrames.push_back(pKFcur);
     mvpLocalKeyFrames.push_back(pKFini);
-    mvpLocalMapPoints=mpMap->GetAllMapPoints();
+    mvpLocalMapPoints=Map_GetAllMapPoints(mpMap);
     mpReferenceKF = pKFcur;
     mCurrentFrame.mpReferenceKF = pKFcur;
 
     mLastFrame = Frame(mCurrentFrame);
 
-    mpMap->SetReferenceMapPoints(mvpLocalMapPoints);
+    Map_SetReferenceMapPoints(mpMap,mvpLocalMapPoints);
 
     MapDrawer_SetCurrentCameraPose(mpMapDrawer,pKFcur->GetPose());
 
@@ -998,7 +998,7 @@ bool Tracking::NeedNewKeyFrame()
     if(mpLocalMapper->isStopped() || mpLocalMapper->stopRequested())
         return false;
 
-    const int nKFs = mpMap->KeyFramesInMap();
+    const int nKFs = Map_KeyFramesInMap(mpMap);
 
     // Do not insert keyframes if not enough frames have passed from last relocalisation
     if(mCurrentFrame.mnId<mnLastRelocFrameId+mMaxFrames && nKFs>mMaxFrames)
@@ -1131,7 +1131,7 @@ void Tracking::CreateNewKeyFrame()
                     pKF->AddMapPoint(pNewMP,i);
                     pNewMP->ComputeDistinctiveDescriptors();
                     pNewMP->UpdateNormalAndDepth();
-                    mpMap->AddMapPoint(pNewMP);
+                    Map_AddMapPoint(mpMap,pNewMP);
 
                     mCurrentFrame.mvpMapPoints[i]=pNewMP;
                     nPoints++;
@@ -1214,7 +1214,7 @@ void Tracking::SearchLocalPoints()
 void Tracking::UpdateLocalMap()
 {
     // This is for visualization
-    mpMap->SetReferenceMapPoints(mvpLocalMapPoints);
+    Map_SetReferenceMapPoints(mpMap,mvpLocalMapPoints);
 
     // Update
     UpdateLocalKeyFrames();
@@ -1557,7 +1557,7 @@ void Tracking::Reset()
     cout << " done" << endl;
 
     // Clear Map (this erase MapPoints and KeyFrames)
-    mpMap->clear();
+    Map_clear(mpMap);
 
     KeyFrame::nNextId = 0;
     Frame::nNextId = 0;

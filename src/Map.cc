@@ -25,109 +25,111 @@
 namespace ORB_SLAM2
 {
 
-Map::Map():mnMaxKFid(0),mnBigChangeIdx(0)
+void Map_init(Map *pMap)
 {
+  pMap->mnMaxKFid=0;
+  pMap->mnBigChangeIdx=0;
 }
 
-void Map::AddKeyFrame(KeyFrame *pKF)
+void Map_AddKeyFrame(Map *pMap, KeyFrame *pKF)
 {
-    unique_lock<mutex> lock(mMutexMap);
-    mspKeyFrames.insert(pKF);
-    if(pKF->mnId>mnMaxKFid)
-        mnMaxKFid=pKF->mnId;
+    unique_lock<mutex> lock(pMap->mMutexMap);
+    pMap->mspKeyFrames.insert(pKF);
+    if(pKF->mnId>pMap->mnMaxKFid)
+        pMap->mnMaxKFid=pKF->mnId;
 }
 
-void Map::AddMapPoint(MapPoint *pMP)
+void Map_AddMapPoint(Map *pMap, MapPoint *pMP)
 {
-    unique_lock<mutex> lock(mMutexMap);
-    mspMapPoints.insert(pMP);
+    unique_lock<mutex> lock(pMap->mMutexMap);
+    pMap->mspMapPoints.insert(pMP);
 }
 
-void Map::EraseMapPoint(MapPoint *pMP)
+void Map_EraseMapPoint(Map *pMap, MapPoint *pMP)
 {
-    unique_lock<mutex> lock(mMutexMap);
-    mspMapPoints.erase(pMP);
+    unique_lock<mutex> lock(pMap->mMutexMap);
+    pMap->mspMapPoints.erase(pMP);
 
     // TODO: This only erase the pointer.
     // Delete the MapPoint
 }
 
-void Map::EraseKeyFrame(KeyFrame *pKF)
+void Map_EraseKeyFrame(Map *pMap, KeyFrame *pKF)
 {
-    unique_lock<mutex> lock(mMutexMap);
-    mspKeyFrames.erase(pKF);
+    unique_lock<mutex> lock(pMap->mMutexMap);
+    pMap->mspKeyFrames.erase(pKF);
 
     // TODO: This only erase the pointer.
     // Delete the MapPoint
 }
 
-void Map::SetReferenceMapPoints(const vector<MapPoint *> &vpMPs)
+void Map_SetReferenceMapPoints(Map *pMap, const vector<MapPoint *> &vpMPs)
 {
-    unique_lock<mutex> lock(mMutexMap);
-    mvpReferenceMapPoints = vpMPs;
+    unique_lock<mutex> lock(pMap->mMutexMap);
+    pMap->mvpReferenceMapPoints = vpMPs;
 }
 
-void Map::InformNewBigChange()
+void Map_InformNewBigChange(Map *pMap )
 {
-    unique_lock<mutex> lock(mMutexMap);
-    mnBigChangeIdx++;
+    unique_lock<mutex> lock(pMap->mMutexMap);
+    pMap->mnBigChangeIdx++;
 }
 
-int Map::GetLastBigChangeIdx()
+int Map_GetLastBigChangeIdx(Map *pMap )
 {
-    unique_lock<mutex> lock(mMutexMap);
-    return mnBigChangeIdx;
+    unique_lock<mutex> lock(pMap->mMutexMap);
+    return pMap->mnBigChangeIdx;
 }
 
-vector<KeyFrame*> Map::GetAllKeyFrames()
+vector<KeyFrame*> Map_GetAllKeyFrames(Map *pMap )
 {
-    unique_lock<mutex> lock(mMutexMap);
-    return vector<KeyFrame*>(mspKeyFrames.begin(),mspKeyFrames.end());
+    unique_lock<mutex> lock(pMap->mMutexMap);
+    return vector<KeyFrame*>(pMap->mspKeyFrames.begin(),pMap->mspKeyFrames.end());
 }
 
-vector<MapPoint*> Map::GetAllMapPoints()
+vector<MapPoint*> Map_GetAllMapPoints(Map *pMap )
 {
-    unique_lock<mutex> lock(mMutexMap);
-    return vector<MapPoint*>(mspMapPoints.begin(),mspMapPoints.end());
+    unique_lock<mutex> lock(pMap->mMutexMap);
+    return vector<MapPoint*>(pMap->mspMapPoints.begin(),pMap->mspMapPoints.end());
 }
 
-long unsigned int Map::MapPointsInMap()
+long unsigned int Map_MapPointsInMap(Map *pMap )
 {
-    unique_lock<mutex> lock(mMutexMap);
-    return mspMapPoints.size();
+    unique_lock<mutex> lock(pMap->mMutexMap);
+    return pMap->mspMapPoints.size();
 }
 
-long unsigned int Map::KeyFramesInMap()
+long unsigned int Map_KeyFramesInMap(Map *pMap )
 {
-    unique_lock<mutex> lock(mMutexMap);
-    return mspKeyFrames.size();
+    unique_lock<mutex> lock(pMap->mMutexMap);
+    return pMap->mspKeyFrames.size();
 }
 
-vector<MapPoint*> Map::GetReferenceMapPoints()
+vector<MapPoint*> Map_GetReferenceMapPoints(Map *pMap)
 {
-    unique_lock<mutex> lock(mMutexMap);
-    return mvpReferenceMapPoints;
+    unique_lock<mutex> lock(pMap->mMutexMap);
+    return pMap->mvpReferenceMapPoints;
 }
 
-long unsigned int Map::GetMaxKFid()
+long unsigned int Map_GetMaxKFid(Map *pMap)
 {
-    unique_lock<mutex> lock(mMutexMap);
-    return mnMaxKFid;
+    unique_lock<mutex> lock(pMap->mMutexMap);
+    return pMap->mnMaxKFid;
 }
 
-void Map::clear()
+void Map_clear(Map *pMap)
 {
-    for(set<MapPoint*>::iterator sit=mspMapPoints.begin(), send=mspMapPoints.end(); sit!=send; sit++)
+    for(set<MapPoint*>::iterator sit=pMap->mspMapPoints.begin(), send=pMap->mspMapPoints.end(); sit!=send; sit++)
         delete *sit;
 
-    for(set<KeyFrame*>::iterator sit=mspKeyFrames.begin(), send=mspKeyFrames.end(); sit!=send; sit++)
+    for(set<KeyFrame*>::iterator sit=pMap->mspKeyFrames.begin(), send=pMap->mspKeyFrames.end(); sit!=send; sit++)
         delete *sit;
 
-    mspMapPoints.clear();
-    mspKeyFrames.clear();
-    mnMaxKFid = 0;
-    mvpReferenceMapPoints.clear();
-    mvpKeyFrameOrigins.clear();
+    pMap->mspMapPoints.clear();
+    pMap->mspKeyFrames.clear();
+    pMap->mnMaxKFid = 0;
+    pMap->mvpReferenceMapPoints.clear();
+    pMap->mvpKeyFrameOrigins.clear();
 }
 
 } //namespace ORB_SLAM

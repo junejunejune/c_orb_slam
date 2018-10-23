@@ -44,8 +44,8 @@ void MapDrawer_init(MapDrawer* pMD, Map* pMap, const string &strSettingPath)
 
 void MapDrawer_DrawMapPoints(MapDrawer* pMD)
 {
-    const vector<MapPoint*> &vpMPs = pMD->mpMap->GetAllMapPoints();
-    const vector<MapPoint*> &vpRefMPs = pMD->mpMap->GetReferenceMapPoints();
+    const vector<MapPoint*> &vpMPs = Map_GetAllMapPoints(pMD->mpMap);
+    const vector<MapPoint*> &vpRefMPs = Map_GetReferenceMapPoints(pMD->mpMap);
 
     set<MapPoint*> spRefMPs(vpRefMPs.begin(), vpRefMPs.end());
 
@@ -87,7 +87,7 @@ void MapDrawer_DrawKeyFrames(MapDrawer* pMD, const bool bDrawKF, const bool bDra
     const float h = w*0.75;
     const float z = w*0.6;
 
-    const vector<KeyFrame*> vpKFs = pMD->mpMap->GetAllKeyFrames();
+    const vector<KeyFrame*> vpKFs = Map_GetAllKeyFrames(pMD->mpMap);
 
     if(bDrawKF)
     {

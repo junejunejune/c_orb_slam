@@ -540,7 +540,7 @@ void KeyFrame::SetBadFlag()
     }
 
 
-    mpMap->EraseKeyFrame(this);
+    Map_EraseKeyFrame(mpMap,this);
     mpKeyFrameDB->erase(this);
 }
 

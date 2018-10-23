@@ -35,30 +35,8 @@ namespace ORB_SLAM2
 class MapPoint;
 class KeyFrame;
 
-class Map
+struct Map
 {
-public:
-    Map();
-
-    void AddKeyFrame(KeyFrame* pKF);
-    void AddMapPoint(MapPoint* pMP);
-    void EraseMapPoint(MapPoint* pMP);
-    void EraseKeyFrame(KeyFrame* pKF);
-    void SetReferenceMapPoints(const std::vector<MapPoint*> &vpMPs);
-    void InformNewBigChange();
-    int GetLastBigChangeIdx();
-
-    std::vector<KeyFrame*> GetAllKeyFrames();
-    std::vector<MapPoint*> GetAllMapPoints();
-    std::vector<MapPoint*> GetReferenceMapPoints();
-
-    long unsigned int MapPointsInMap();
-    long unsigned  KeyFramesInMap();
-
-    long unsigned int GetMaxKFid();
-
-    void clear();
-
     vector<KeyFrame*> mvpKeyFrameOrigins;
 
     std::mutex mMutexMapUpdate;
@@ -66,7 +44,6 @@ public:
     // This avoid that two points are created simultaneously in separate threads (id conflict)
     std::mutex mMutexPointCreation;
 
-protected:
     std::set<MapPoint*> mspMapPoints;
     std::set<KeyFrame*> mspKeyFrames;
 
@@ -79,6 +56,27 @@ protected:
 
     std::mutex mMutexMap;
 };
+    void Map_init(Map *pMap);
+
+    void Map_AddKeyFrame(Map *pMap, KeyFrame* pKF);
+    void Map_AddMapPoint(Map *pMap, MapPoint* pMP);
+    void Map_EraseMapPoint(Map *pMap, MapPoint* pMP);
+    void Map_EraseKeyFrame(Map *pMap, KeyFrame* pKF);
+    void Map_SetReferenceMapPoints(Map *pMap, const std::vector<MapPoint*> &vpMPs);
+    void Map_InformNewBigChange(Map *pMap);
+    int Map_GetLastBigChangeIdx(Map *pMap);
+
+    std::vector<KeyFrame*> Map_GetAllKeyFrames(Map *pMap);
+    std::vector<MapPoint*> Map_GetAllMapPoints(Map *pMap);
+    std::vector<MapPoint*> Map_GetReferenceMapPoints(Map *pMap);
+
+    long unsigned int Map_MapPointsInMap(Map *pMap);
+    long unsigned  Map_KeyFramesInMap(Map *pMap);
+
+    long unsigned int Map_GetMaxKFid(Map *pMap);
+
+    void Map_clear(Map *pMap);
+
 
 } //namespace ORB_SLAM
 

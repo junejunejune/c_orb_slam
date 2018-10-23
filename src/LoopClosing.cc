@@ -577,7 +577,7 @@ void LoopClosing::CorrectLoop()
     // Optimize graph
     Optimizer_OptimizeEssentialGraph(mpMap, mpMatchedKF, mpCurrentKF, NonCorrectedSim3, CorrectedSim3, LoopConnections, mbFixScale);
 
-    mpMap->InformNewBigChange();
+    Map_InformNewBigChange(mpMap);
 
     // Add loop edge
     mpMatchedKF->AddLoopEdge(mpCurrentKF);
@@ -715,7 +715,7 @@ void LoopClosing::RunGlobalBundleAdjustment(unsigned long nLoopKF)
             }
 
             // Correct MapPoints
-            const vector<MapPoint*> vpMPs = mpMap->GetAllMapPoints();
+            const vector<MapPoint*> vpMPs = Map_GetAllMapPoints(mpMap);
 
             for(size_t i=0; i<vpMPs.size(); i++)
             {
@@ -751,7 +751,7 @@ void LoopClosing::RunGlobalBundleAdjustment(unsigned long nLoopKF)
                 }
             }            
 
-            mpMap->InformNewBigChange();
+            Map_InformNewBigChange(mpMap);
 
             mpLocalMapper->Release();
 

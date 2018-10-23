@@ -140,8 +140,8 @@ void FrameDrawer_DrawTextInfo(FrameDrawer* pFD, cv::Mat &im, int nState, cv::Mat
             s << "SLAM MODE |  ";
         else
             s << "LOCALIZATION | ";
-        int nKFs = pFD->mpMap->KeyFramesInMap();
-        int nMPs = pFD->mpMap->MapPointsInMap();
+        int nKFs = Map_KeyFramesInMap(pFD->mpMap);
+        int nMPs = Map_MapPointsInMap(pFD->mpMap);
         s << "KFs: " << nKFs << ", MPs: " << nMPs << ", Matches: " << pFD->mnTracked;
         if(pFD->mnTrackedVO>0)
             s << ", + VO matches: " << pFD->mnTrackedVO;

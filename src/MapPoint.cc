@@ -164,7 +164,7 @@ void MapPoint::SetBadFlag()
         pKF->EraseMapPointMatch(mit->second);
     }
 
-    mpMap->EraseMapPoint(this);
+    Map_EraseMapPoint(mpMap,this);
 }
 
 MapPoint* MapPoint::GetReplaced()
@@ -211,7 +211,7 @@ void MapPoint::Replace(MapPoint* pMP)
     pMP->IncreaseVisible(nvisible);
     pMP->ComputeDistinctiveDescriptors();
 
-    mpMap->EraseMapPoint(this);
+    Map_EraseMapPoint(mpMap,this);
 }
 
 bool MapPoint::isBad()
