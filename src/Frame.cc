@@ -396,7 +396,7 @@ void Frame::ComputeBoW()
 {
     if(mBowVec.empty())
     {
-        vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptors);
+        vector<cv::Mat> vCurrentDesc = Converter_toDescriptorVector(mDescriptors);
         mpORBvocabulary->transform(vCurrentDesc,mBowVec,mFeatVec,4);
     }
 }
