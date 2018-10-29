@@ -58,9 +58,9 @@ void MapDrawer_DrawMapPoints(MapDrawer* pMD)
 
     for(size_t i=0, iend=vpMPs.size(); i<iend;i++)
     {
-        if(vpMPs[i]->isBad() || spRefMPs.count(vpMPs[i]))
+        if(MapPoint_isBad(vpMPs[i]) || spRefMPs.count(vpMPs[i]))
             continue;
-        cv::Mat pos = vpMPs[i]->GetWorldPos();
+        cv::Mat pos = MapPoint_GetWorldPos(vpMPs[i]);
         glVertex3f(pos.at<float>(0),pos.at<float>(1),pos.at<float>(2));
     }
     glEnd();
@@ -71,9 +71,9 @@ void MapDrawer_DrawMapPoints(MapDrawer* pMD)
 
     for(set<MapPoint*>::iterator sit=spRefMPs.begin(), send=spRefMPs.end(); sit!=send; sit++)
     {
-        if((*sit)->isBad())
+        if(MapPoint_isBad((*sit)))
             continue;
-        cv::Mat pos = (*sit)->GetWorldPos();
+        cv::Mat pos = MapPoint_GetWorldPos((*sit));
         glVertex3f(pos.at<float>(0),pos.at<float>(1),pos.at<float>(2));
 
     }

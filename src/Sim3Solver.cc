@@ -73,11 +73,11 @@ void Sim3Solver_init(Sim3Solver* mpSim3Solver,KeyFrame *pKF1, KeyFrame *pKF2, co
             if(!pMP1)
                 continue;
 
-            if(pMP1->isBad() || pMP2->isBad())
+            if(MapPoint_isBad(pMP1) || MapPoint_isBad(pMP2))
                 continue;
 
-            int indexKF1 = pMP1->GetIndexInKeyFrame(pKF1);
-            int indexKF2 = pMP2->GetIndexInKeyFrame(pKF2);
+            int indexKF1 = MapPoint_GetIndexInKeyFrame(pMP1,pKF1);
+            int indexKF2 = MapPoint_GetIndexInKeyFrame(pMP2,pKF2);
 
             if(indexKF1<0 || indexKF2<0)
                 continue;
@@ -95,10 +95,10 @@ void Sim3Solver_init(Sim3Solver* mpSim3Solver,KeyFrame *pKF1, KeyFrame *pKF2, co
             mpSim3Solver->mvpMapPoints2.push_back(pMP2);
             mpSim3Solver->mvnIndices1.push_back(i1);
 
-            cv::Mat X3D1w = pMP1->GetWorldPos();
+            cv::Mat X3D1w = MapPoint_GetWorldPos(pMP1);
             mpSim3Solver->mvX3Dc1.push_back(Rcw1*X3D1w+tcw1);
 
-            cv::Mat X3D2w = pMP2->GetWorldPos();
+            cv::Mat X3D2w = MapPoint_GetWorldPos(pMP2);
             mpSim3Solver->mvX3Dc2.push_back(Rcw2*X3D2w+tcw2);
 
             mpSim3Solver->mvAllIndices.push_back(idx);

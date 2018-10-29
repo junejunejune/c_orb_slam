@@ -58,7 +58,7 @@ int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame &F, const vecto
         if(!pMP->mbTrackInView)
             continue;
 
-        if(pMP->isBad())
+        if(MapPoint_isBad(pMP))
             continue;
 
         const int &nPredictedLevel = pMP->mnTrackScaleLevel;
@@ -75,7 +75,7 @@ int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame &F, const vecto
         if(vIndices.empty())
             continue;
 
-        const cv::Mat MPdescriptor = pMP->GetDescriptor();
+        const cv::Mat MPdescriptor = MapPoint_GetDescriptor(pMP);
 
         int bestDist=256;
         int bestLevel= -1;
@@ -89,7 +89,7 @@ int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame &F, const vecto
             const size_t idx = *vit;
 
             if(F.mvpMapPoints[idx])
-                if(F.mvpMapPoints[idx]->Observations()>0)
+                if(MapPoint_Observations(F.mvpMapPoints[idx])>0)
                     continue;
 
             if(F.mvuRight[idx]>0)
@@ -197,7 +197,7 @@ int ORBmatcher_SearchByBoW(ORBmatcher* mpORBmatcher,KeyFrame* pKF,Frame &F, vect
                 if(!pMP)
                     continue;
 
-                if(pMP->isBad())
+                if(MapPoint_isBad(pMP))
                     continue;                
 
                 const cv::Mat &dKF= pKF->mDescriptors.row(realIdxKF);
@@ -318,11 +318,11 @@ int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,KeyFrame* pKF, cv::Ma
         MapPoint* pMP = vpPoints[iMP];
 
         // Discard Bad MapPoints and already found
-        if(pMP->isBad() || spAlreadyFound.count(pMP))
+        if(MapPoint_isBad(pMP) || spAlreadyFound.count(pMP))
             continue;
 
         // Get 3D Coords.
-        cv::Mat p3Dw = pMP->GetWorldPos();
+        cv::Mat p3Dw = MapPoint_GetWorldPos(pMP);
 
         // Transform into Camera Coords.
         cv::Mat p3Dc = Rcw*p3Dw+tcw;
@@ -344,8 +344,8 @@ int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,KeyFrame* pKF, cv::Ma
             continue;
 
         // Depth must be inside the scale invariance region of the point
-        const float maxDistance = pMP->GetMaxDistanceInvariance();
-        const float minDistance = pMP->GetMinDistanceInvariance();
+        const float maxDistance = MapPoint_GetMaxDistanceInvariance(pMP);
+        const float minDistance = MapPoint_GetMinDistanceInvariance(pMP);
         cv::Mat PO = p3Dw-Ow;
         const float dist = cv::norm(PO);
 
@@ -353,12 +353,12 @@ int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,KeyFrame* pKF, cv::Ma
             continue;
 
         // Viewing angle must be less than 60 deg
-        cv::Mat Pn = pMP->GetNormal();
+        cv::Mat Pn = MapPoint_GetNormal(pMP);
 
         if(PO.dot(Pn)<0.5*dist)
             continue;
 
-        int nPredictedLevel = pMP->PredictScale(dist,pKF);
+        int nPredictedLevel = MapPoint_PredictScale(pMP,dist,pKF);
 
         // Search in a radius
         const float radius = th*pKF->mvScaleFactors[nPredictedLevel];
@@ -369,7 +369,7 @@ int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,KeyFrame* pKF, cv::Ma
             continue;
 
         // Match to the most similar keypoint in the radius
-        const cv::Mat dMP = pMP->GetDescriptor();
+        const cv::Mat dMP = MapPoint_GetDescriptor(pMP);
 
         int bestDist = 256;
         int bestIdx = -1;
@@ -562,7 +562,7 @@ int ORBmatcher_SearchByBoW(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, KeyFrame *pK
                 MapPoint* pMP1 = vpMapPoints1[idx1];
                 if(!pMP1)
                     continue;
-                if(pMP1->isBad())
+                if(MapPoint_isBad(pMP1))
                     continue;
 
                 const cv::Mat &d1 = Descriptors1.row(idx1);
@@ -580,7 +580,7 @@ int ORBmatcher_SearchByBoW(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, KeyFrame *pK
                     if(vbMatched2[idx2] || !pMP2)
                         continue;
 
-                    if(pMP2->isBad())
+                    if(MapPoint_isBad(pMP2))
                         continue;
 
                     const cv::Mat &d2 = Descriptors2.row(idx2);
@@ -850,10 +850,10 @@ int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, const vector<MapPoin
         if(!pMP)
             continue;
 
-        if(pMP->isBad() || pMP->IsInKeyFrame(pKF))
+        if(MapPoint_isBad(pMP) || MapPoint_IsInKeyFrame(pMP,pKF))
             continue;
 
-        cv::Mat p3Dw = pMP->GetWorldPos();
+        cv::Mat p3Dw = MapPoint_GetWorldPos(pMP);
         cv::Mat p3Dc = Rcw*p3Dw + tcw;
 
         // Depth must be positive
@@ -873,8 +873,8 @@ int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, const vector<MapPoin
 
         const float ur = u-bf*invz;
 
-        const float maxDistance = pMP->GetMaxDistanceInvariance();
-        const float minDistance = pMP->GetMinDistanceInvariance();
+        const float maxDistance = MapPoint_GetMaxDistanceInvariance(pMP);
+        const float minDistance = MapPoint_GetMinDistanceInvariance(pMP);
         cv::Mat PO = p3Dw-Ow;
         const float dist3D = cv::norm(PO);
 
@@ -883,12 +883,12 @@ int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, const vector<MapPoin
             continue;
 
         // Viewing angle must be less than 60 deg
-        cv::Mat Pn = pMP->GetNormal();
+        cv::Mat Pn = MapPoint_GetNormal(pMP);
 
         if(PO.dot(Pn)<0.5*dist3D)
             continue;
 
-        int nPredictedLevel = pMP->PredictScale(dist3D,pKF);
+        int nPredictedLevel = MapPoint_PredictScale(pMP,dist3D,pKF);
 
         // Search in a radius
         const float radius = th*pKF->mvScaleFactors[nPredictedLevel];
@@ -900,7 +900,7 @@ int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, const vector<MapPoin
 
         // Match to the most similar keypoint in the radius
 
-        const cv::Mat dMP = pMP->GetDescriptor();
+        const cv::Mat dMP = MapPoint_GetDescriptor(pMP);
 
         int bestDist = 256;
         int bestIdx = -1;
@@ -958,17 +958,17 @@ int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, const vector<MapPoin
             MapPoint* pMPinKF = KeyFrame_GetMapPoint(pKF,bestIdx);
             if(pMPinKF)
             {
-                if(!pMPinKF->isBad())
+                if(!MapPoint_isBad(pMPinKF))
                 {
-                    if(pMPinKF->Observations()>pMP->Observations())
-                        pMP->Replace(pMPinKF);
+                    if(MapPoint_Observations(pMPinKF)>MapPoint_Observations(pMP))
+                        MapPoint_Replace(pMP,pMPinKF);
                     else
-                        pMPinKF->Replace(pMP);
+                        MapPoint_Replace(pMPinKF,pMP);
                 }
             }
             else
             {
-                pMP->AddObservation(pKF,bestIdx);
+                MapPoint_AddObservation(pMP,pKF,bestIdx);
                 KeyFrame_AddMapPoint(pKF,pMP,bestIdx);
             }
             nFused++;
@@ -1006,11 +1006,11 @@ int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, cv::Mat Scw, const v
         MapPoint* pMP = vpPoints[iMP];
 
         // Discard Bad MapPoints and already found
-        if(pMP->isBad() || spAlreadyFound.count(pMP))
+        if(MapPoint_isBad(pMP) || spAlreadyFound.count(pMP))
             continue;
 
         // Get 3D Coords.
-        cv::Mat p3Dw = pMP->GetWorldPos();
+        cv::Mat p3Dw = MapPoint_GetWorldPos(pMP);
 
         // Transform into Camera Coords.
         cv::Mat p3Dc = Rcw*p3Dw+tcw;
@@ -1032,8 +1032,8 @@ int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, cv::Mat Scw, const v
             continue;
 
         // Depth must be inside the scale pyramid of the image
-        const float maxDistance = pMP->GetMaxDistanceInvariance();
-        const float minDistance = pMP->GetMinDistanceInvariance();
+        const float maxDistance = MapPoint_GetMaxDistanceInvariance(pMP);
+        const float minDistance = MapPoint_GetMinDistanceInvariance(pMP);
         cv::Mat PO = p3Dw-Ow;
         const float dist3D = cv::norm(PO);
 
@@ -1041,13 +1041,13 @@ int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, cv::Mat Scw, const v
             continue;
 
         // Viewing angle must be less than 60 deg
-        cv::Mat Pn = pMP->GetNormal();
+        cv::Mat Pn = MapPoint_GetNormal(pMP);
 
         if(PO.dot(Pn)<0.5*dist3D)
             continue;
 
         // Compute predicted scale level
-        const int nPredictedLevel = pMP->PredictScale(dist3D,pKF);
+        const int nPredictedLevel = MapPoint_PredictScale(pMP,dist3D,pKF);
 
         // Search in a radius
         const float radius = th*pKF->mvScaleFactors[nPredictedLevel];
@@ -1059,7 +1059,7 @@ int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, cv::Mat Scw, const v
 
         // Match to the most similar keypoint in the radius
 
-        const cv::Mat dMP = pMP->GetDescriptor();
+        const cv::Mat dMP = MapPoint_GetDescriptor(pMP);
 
         int bestDist = INT_MAX;
         int bestIdx = -1;
@@ -1088,12 +1088,12 @@ int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, cv::Mat Scw, const v
             MapPoint* pMPinKF = KeyFrame_GetMapPoint(pKF,bestIdx);
             if(pMPinKF)
             {
-                if(!pMPinKF->isBad())
+                if(!MapPoint_isBad(pMPinKF))
                     vpReplacePoint[iMP] = pMPinKF;
             }
             else
             {
-                pMP->AddObservation(pKF,bestIdx);
+                MapPoint_AddObservation(pMP,pKF,bestIdx);
                 KeyFrame_AddMapPoint(pKF, pMP,bestIdx);
             }
             nFused++;
@@ -1139,7 +1139,7 @@ int ORBmatcher_SearchBySim3(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, KeyFrame *p
         if(pMP)
         {
             vbAlreadyMatched1[i]=true;
-            int idx2 = pMP->GetIndexInKeyFrame(pKF2);
+            int idx2 = MapPoint_GetIndexInKeyFrame(pMP,pKF2);
             if(idx2>=0 && idx2<N2)
                 vbAlreadyMatched2[idx2]=true;
         }
@@ -1156,10 +1156,10 @@ int ORBmatcher_SearchBySim3(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, KeyFrame *p
         if(!pMP || vbAlreadyMatched1[i1])
             continue;
 
-        if(pMP->isBad())
+        if(MapPoint_isBad(pMP))
             continue;
 
-        cv::Mat p3Dw = pMP->GetWorldPos();
+        cv::Mat p3Dw = MapPoint_GetWorldPos(pMP);
         cv::Mat p3Dc1 = R1w*p3Dw + t1w;
         cv::Mat p3Dc2 = sR21*p3Dc1 + t21;
 
@@ -1178,8 +1178,8 @@ int ORBmatcher_SearchBySim3(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, KeyFrame *p
         if(!KeyFrame_IsInImage(pKF2,u,v))
             continue;
 
-        const float maxDistance = pMP->GetMaxDistanceInvariance();
-        const float minDistance = pMP->GetMinDistanceInvariance();
+        const float maxDistance = MapPoint_GetMaxDistanceInvariance(pMP);
+        const float minDistance = MapPoint_GetMinDistanceInvariance(pMP);
         const float dist3D = cv::norm(p3Dc2);
 
         // Depth must be inside the scale invariance region
@@ -1187,7 +1187,7 @@ int ORBmatcher_SearchBySim3(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, KeyFrame *p
             continue;
 
         // Compute predicted octave
-        const int nPredictedLevel = pMP->PredictScale(dist3D,pKF2);
+        const int nPredictedLevel = MapPoint_PredictScale(pMP,dist3D,pKF2);
 
         // Search in a radius
         const float radius = th*pKF2->mvScaleFactors[nPredictedLevel];
@@ -1198,7 +1198,7 @@ int ORBmatcher_SearchBySim3(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, KeyFrame *p
             continue;
 
         // Match to the most similar keypoint in the radius
-        const cv::Mat dMP = pMP->GetDescriptor();
+        const cv::Mat dMP = MapPoint_GetDescriptor(pMP);
 
         int bestDist = INT_MAX;
         int bestIdx = -1;
@@ -1236,10 +1236,10 @@ int ORBmatcher_SearchBySim3(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, KeyFrame *p
         if(!pMP || vbAlreadyMatched2[i2])
             continue;
 
-        if(pMP->isBad())
+        if(MapPoint_isBad(pMP))
             continue;
 
-        cv::Mat p3Dw = pMP->GetWorldPos();
+        cv::Mat p3Dw = MapPoint_GetWorldPos(pMP);
         cv::Mat p3Dc2 = R2w*p3Dw + t2w;
         cv::Mat p3Dc1 = sR12*p3Dc2 + t12;
 
@@ -1258,8 +1258,8 @@ int ORBmatcher_SearchBySim3(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, KeyFrame *p
         if(!KeyFrame_IsInImage(pKF1,u,v))
             continue;
 
-        const float maxDistance = pMP->GetMaxDistanceInvariance();
-        const float minDistance = pMP->GetMinDistanceInvariance();
+        const float maxDistance = MapPoint_GetMaxDistanceInvariance(pMP);
+        const float minDistance = MapPoint_GetMinDistanceInvariance(pMP);
         const float dist3D = cv::norm(p3Dc1);
 
         // Depth must be inside the scale pyramid of the image
@@ -1267,7 +1267,7 @@ int ORBmatcher_SearchBySim3(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, KeyFrame *p
             continue;
 
         // Compute predicted octave
-        const int nPredictedLevel = pMP->PredictScale(dist3D,pKF1);
+        const int nPredictedLevel = MapPoint_PredictScale(pMP,dist3D,pKF1);
 
         // Search in a radius of 2.5*sigma(ScaleLevel)
         const float radius = th*pKF1->mvScaleFactors[nPredictedLevel];
@@ -1278,7 +1278,7 @@ int ORBmatcher_SearchBySim3(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, KeyFrame *p
             continue;
 
         // Match to the most similar keypoint in the radius
-        const cv::Mat dMP = pMP->GetDescriptor();
+        const cv::Mat dMP = MapPoint_GetDescriptor(pMP);
 
         int bestDist = INT_MAX;
         int bestIdx = -1;
@@ -1361,7 +1361,7 @@ int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame &CurrentFrame, 
             if(!LastFrame.mvbOutlier[i])
             {
                 // Project
-                cv::Mat x3Dw = pMP->GetWorldPos();
+                cv::Mat x3Dw = MapPoint_GetWorldPos(pMP);
                 cv::Mat x3Dc = Rcw*x3Dw+tcw;
 
                 const float xc = x3Dc.at<float>(0);
@@ -1396,7 +1396,7 @@ int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame &CurrentFrame, 
                 if(vIndices2.empty())
                     continue;
 
-                const cv::Mat dMP = pMP->GetDescriptor();
+                const cv::Mat dMP = MapPoint_GetDescriptor(pMP);
 
                 int bestDist = 256;
                 int bestIdx2 = -1;
@@ -1405,7 +1405,7 @@ int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame &CurrentFrame, 
                 {
                     const size_t i2 = *vit;
                     if(CurrentFrame.mvpMapPoints[i2])
-                        if(CurrentFrame.mvpMapPoints[i2]->Observations()>0)
+                        if(MapPoint_Observations(CurrentFrame.mvpMapPoints[i2])>0)
                             continue;
 
                     if(CurrentFrame.mvuRight[i2]>0)
@@ -1495,10 +1495,10 @@ int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame &CurrentFrame, 
 
         if(pMP)
         {
-            if(!pMP->isBad() && !sAlreadyFound.count(pMP))
+            if(!MapPoint_isBad(pMP) && !sAlreadyFound.count(pMP))
             {
                 //Project
-                cv::Mat x3Dw = pMP->GetWorldPos();
+                cv::Mat x3Dw = MapPoint_GetWorldPos(pMP);
                 cv::Mat x3Dc = Rcw*x3Dw+tcw;
 
                 const float xc = x3Dc.at<float>(0);
@@ -1517,14 +1517,14 @@ int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame &CurrentFrame, 
                 cv::Mat PO = x3Dw-Ow;
                 float dist3D = cv::norm(PO);
 
-                const float maxDistance = pMP->GetMaxDistanceInvariance();
-                const float minDistance = pMP->GetMinDistanceInvariance();
+                const float maxDistance = MapPoint_GetMaxDistanceInvariance(pMP);
+                const float minDistance = MapPoint_GetMinDistanceInvariance(pMP);
 
                 // Depth must be inside the scale pyramid of the image
                 if(dist3D<minDistance || dist3D>maxDistance)
                     continue;
 
-                int nPredictedLevel = pMP->PredictScale(dist3D,&CurrentFrame);
+                int nPredictedLevel = MapPoint_PredictScale(pMP,dist3D,&CurrentFrame);
 
                 // Search in a window
                 const float radius = th*CurrentFrame.mvScaleFactors[nPredictedLevel];
@@ -1534,7 +1534,7 @@ int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame &CurrentFrame, 
                 if(vIndices2.empty())
                     continue;
 
-                const cv::Mat dMP = pMP->GetDescriptor();
+                const cv::Mat dMP = MapPoint_GetDescriptor(pMP);
 
                 int bestDist = 256;
                 int bestIdx2 = -1;

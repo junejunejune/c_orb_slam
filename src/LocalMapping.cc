@@ -143,13 +143,13 @@ void LocalMapping::ProcessNewKeyFrame()
         MapPoint* pMP = vpMapPointMatches[i];
         if(pMP)
         {
-            if(!pMP->isBad())
+            if(!MapPoint_isBad(pMP))
             {
-                if(!pMP->IsInKeyFrame(mpCurrentKeyFrame))
+                if(!MapPoint_IsInKeyFrame(pMP,mpCurrentKeyFrame))
                 {
-                    pMP->AddObservation(mpCurrentKeyFrame, i);
-                    pMP->UpdateNormalAndDepth();
-                    pMP->ComputeDistinctiveDescriptors();
+                    MapPoint_AddObservation(pMP,mpCurrentKeyFrame, i);
+                    MapPoint_UpdateNormalAndDepth(pMP);
+                    MapPoint_ComputeDistinctiveDescriptors(pMP);
                 }
                 else // this can only happen for new stereo points inserted by the Tracking
                 {
@@ -182,18 +182,18 @@ void LocalMapping::MapPointCulling()
     while(lit!=mlpRecentAddedMapPoints.end())
     {
         MapPoint* pMP = *lit;
-        if(pMP->isBad())
+        if(MapPoint_isBad(pMP))
         {
             lit = mlpRecentAddedMapPoints.erase(lit);
         }
-        else if(pMP->GetFoundRatio()<0.25f )
+        else if(MapPoint_GetFoundRatio(pMP)<0.25f )
         {
-            pMP->SetBadFlag();
+            MapPoint_SetBadFlag(pMP);
             lit = mlpRecentAddedMapPoints.erase(lit);
         }
-        else if(((int)nCurrentKFid-(int)pMP->mnFirstKFid)>=2 && pMP->Observations()<=cnThObs)
+        else if(((int)nCurrentKFid-(int)pMP->mnFirstKFid)>=2 && MapPoint_Observations(pMP)<=cnThObs)
         {
-            pMP->SetBadFlag();
+            MapPoint_SetBadFlag(pMP);
             lit = mlpRecentAddedMapPoints.erase(lit);
         }
         else if(((int)nCurrentKFid-(int)pMP->mnFirstKFid)>=3)
@@ -434,17 +434,18 @@ void LocalMapping::CreateNewMapPoints()
                 continue;
 
             // Triangulation is succesfull
-            MapPoint* pMP = new MapPoint(x3D,mpCurrentKeyFrame,mpMap);
+            MapPoint* pMP = new MapPoint;
+            MapPoint_init_1(pMP, x3D,mpCurrentKeyFrame,mpMap);
 
-            pMP->AddObservation(mpCurrentKeyFrame,idx1);            
-            pMP->AddObservation(pKF2,idx2);
+            MapPoint_AddObservation(pMP,mpCurrentKeyFrame,idx1);            
+            MapPoint_AddObservation(pMP,pKF2,idx2);
 
             KeyFrame_AddMapPoint(mpCurrentKeyFrame,pMP,idx1);
             KeyFrame_AddMapPoint(pKF2, pMP,idx2);
 
-            pMP->ComputeDistinctiveDescriptors();
+            MapPoint_ComputeDistinctiveDescriptors(pMP);
 
-            pMP->UpdateNormalAndDepth();
+            MapPoint_UpdateNormalAndDepth(pMP);
 
             Map_AddMapPoint(mpMap,pMP);
             mlpRecentAddedMapPoints.push_back(pMP);
@@ -512,7 +513,7 @@ void LocalMapping::SearchInNeighbors()
             MapPoint* pMP = *vitMP;
             if(!pMP)
                 continue;
-            if(pMP->isBad() || pMP->mnFuseCandidateForKF == mpCurrentKeyFrame->mnId)
+            if(MapPoint_isBad(pMP) || pMP->mnFuseCandidateForKF == mpCurrentKeyFrame->mnId)
                 continue;
             pMP->mnFuseCandidateForKF = mpCurrentKeyFrame->mnId;
             vpFuseCandidates.push_back(pMP);
@@ -529,10 +530,10 @@ void LocalMapping::SearchInNeighbors()
         MapPoint* pMP=vpMapPointMatches[i];
         if(pMP)
         {
-            if(!pMP->isBad())
+            if(!MapPoint_isBad(pMP))
             {
-                pMP->ComputeDistinctiveDescriptors();
-                pMP->UpdateNormalAndDepth();
+                MapPoint_ComputeDistinctiveDescriptors(pMP);
+                MapPoint_UpdateNormalAndDepth(pMP);
             }
         }
     }
@@ -661,7 +662,7 @@ void LocalMapping::KeyFrameCulling()
             MapPoint* pMP = vpMapPoints[i];
             if(pMP)
             {
-                if(!pMP->isBad())
+                if(!MapPoint_isBad(pMP))
                 {
                     if(!mbMonocular)
                     {
@@ -670,10 +671,10 @@ void LocalMapping::KeyFrameCulling()
                     }
 
                     nMPs++;
-                    if(pMP->Observations()>thObs)
+                    if(MapPoint_Observations(pMP)>thObs)
                     {
                         const int &scaleLevel = pKF->mvKeysUn[i].octave;
-                        const map<KeyFrame*, size_t> observations = pMP->GetObservations();
+                        const map<KeyFrame*, size_t> observations = MapPoint_GetObservations(pMP);
                         int nObs=0;
                         for(map<KeyFrame*, size_t>::const_iterator mit=observations.begin(), mend=observations.end(); mit!=mend; mit++)
                         {

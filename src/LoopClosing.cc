@@ -372,7 +372,7 @@ bool LoopClosing::ComputeSim3()
             MapPoint* pMP = vpMapPoints[i];
             if(pMP)
             {
-                if(!pMP->isBad() && pMP->mnLoopPointForKF!=mpCurrentKF->mnId)
+                if(!MapPoint_isBad(pMP) && pMP->mnLoopPointForKF!=mpCurrentKF->mnId)
                 {
                     mvpLoopMapPoints.push_back(pMP);
                     pMP->mnLoopPointForKF=mpCurrentKF->mnId;
@@ -493,21 +493,21 @@ void LoopClosing::CorrectLoop()
                 MapPoint* pMPi = vpMPsi[iMP];
                 if(!pMPi)
                     continue;
-                if(pMPi->isBad())
+                if(MapPoint_isBad(pMPi))
                     continue;
                 if(pMPi->mnCorrectedByKF==mpCurrentKF->mnId)
                     continue;
 
                 // Project with non-corrected pose and project back with corrected pose
-                cv::Mat P3Dw = pMPi->GetWorldPos();
+                cv::Mat P3Dw = MapPoint_GetWorldPos(pMPi);
                 Eigen::Matrix<double,3,1> eigP3Dw = Converter_toVector3d(P3Dw);
                 Eigen::Matrix<double,3,1> eigCorrectedP3Dw = g2oCorrectedSwi.map(g2oSiw.map(eigP3Dw));
 
                 cv::Mat cvCorrectedP3Dw = Converter_toCvMat(eigCorrectedP3Dw);
-                pMPi->SetWorldPos(cvCorrectedP3Dw);
+                MapPoint_SetWorldPos(pMPi,cvCorrectedP3Dw);
                 pMPi->mnCorrectedByKF = mpCurrentKF->mnId;
                 pMPi->mnCorrectedReference = pKFi->mnId;
-                pMPi->UpdateNormalAndDepth();
+                MapPoint_UpdateNormalAndDepth(pMPi);
             }
 
             // Update keyframe pose with corrected Sim3. First transform Sim3 to SE3 (scale translation)
@@ -534,12 +534,12 @@ void LoopClosing::CorrectLoop()
                 MapPoint* pLoopMP = mvpCurrentMatchedPoints[i];
                 MapPoint* pCurMP =KeyFrame_GetMapPoint( mpCurrentKF,i);
                 if(pCurMP)
-                    pCurMP->Replace(pLoopMP);
+                    MapPoint_Replace(pCurMP,pLoopMP);
                 else
                 {
                     KeyFrame_AddMapPoint(mpCurrentKF, pLoopMP,i);
-                    pLoopMP->AddObservation(mpCurrentKF,i);
-                    pLoopMP->ComputeDistinctiveDescriptors();
+                    MapPoint_AddObservation(pLoopMP,mpCurrentKF,i);
+                    MapPoint_ComputeDistinctiveDescriptors(pLoopMP);
                 }
             }
         }
@@ -620,7 +620,7 @@ void LoopClosing::SearchAndFuse(const KeyFrameAndPose &CorrectedPosesMap)
             MapPoint* pRep = vpReplacePoints[i];
             if(pRep)
             {
-                pRep->Replace(mvpLoopMapPoints[i]);
+                MapPoint_Replace(pRep,mvpLoopMapPoints[i]);
             }
         }
     }
@@ -720,18 +720,18 @@ void LoopClosing::RunGlobalBundleAdjustment(unsigned long nLoopKF)
             {
                 MapPoint* pMP = vpMPs[i];
 
-                if(pMP->isBad())
+                if(MapPoint_isBad(pMP))
                     continue;
 
                 if(pMP->mnBAGlobalForKF==nLoopKF)
                 {
                     // If optimized by Global BA, just update
-                    pMP->SetWorldPos(pMP->mPosGBA);
+                    MapPoint_SetWorldPos(pMP,pMP->mPosGBA);
                 }
                 else
                 {
                     // Update according to the correction of its reference keyframe
-                    KeyFrame* pRefKF = pMP->GetReferenceKeyFrame();
+                    KeyFrame* pRefKF = MapPoint_GetReferenceKeyFrame(pMP);
 
                     if(pRefKF->mnBAGlobalForKF!=nLoopKF)
                         continue;
@@ -739,14 +739,14 @@ void LoopClosing::RunGlobalBundleAdjustment(unsigned long nLoopKF)
                     // Map to non-corrected camera
                     cv::Mat Rcw = pRefKF->mTcwBefGBA.rowRange(0,3).colRange(0,3);
                     cv::Mat tcw = pRefKF->mTcwBefGBA.rowRange(0,3).col(3);
-                    cv::Mat Xc = Rcw*pMP->GetWorldPos()+tcw;
+                    cv::Mat Xc = Rcw*MapPoint_GetWorldPos(pMP)+tcw;
 
                     // Backproject using corrected camera
                     cv::Mat Twc = KeyFrame_GetPoseInverse(pRefKF);
                     cv::Mat Rwc = Twc.rowRange(0,3).colRange(0,3);
                     cv::Mat twc = Twc.rowRange(0,3).col(3);
 
-                    pMP->SetWorldPos(Rwc*Xc+twc);
+                    MapPoint_SetWorldPos(pMP, Rwc*Xc+twc);
                 }
             }            
 

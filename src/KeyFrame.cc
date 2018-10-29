@@ -237,7 +237,7 @@ void KeyFrame_EraseMapPointMatch(KeyFrame *pKeyFrame,const size_t &idx)
 
 void KeyFrame_EraseMapPointMatch(KeyFrame *pKeyFrame,MapPoint* pMP)
 {
-    int idx = pMP->GetIndexInKeyFrame(pKeyFrame);
+    int idx = MapPoint_GetIndexInKeyFrame(pMP, pKeyFrame);
     if(idx>=0)
         pKeyFrame->mvpMapPoints[idx]=static_cast<MapPoint*>(NULL);
 }
@@ -257,7 +257,7 @@ set<MapPoint*> KeyFrame_GetMapPoints(KeyFrame *pKeyFrame)
         if(!pKeyFrame->mvpMapPoints[i])
             continue;
         MapPoint* pMP = pKeyFrame->mvpMapPoints[i];
-        if(!pMP->isBad())
+        if(!MapPoint_isBad(pMP))
             s.insert(pMP);
     }
     return s;
@@ -274,11 +274,11 @@ int KeyFrame_TrackedMapPoints(KeyFrame *pKeyFrame, const int &minObs)
         MapPoint* pMP = pKeyFrame->mvpMapPoints[i];
         if(pMP)
         {
-            if(!pMP->isBad())
+            if(!MapPoint_isBad(pMP))
             {
                 if(bCheckObs)
                 {
-                    if(pKeyFrame->mvpMapPoints[i]->Observations()>=minObs)
+                    if(MapPoint_Observations(pKeyFrame->mvpMapPoints[i])>=minObs)
                         nPoints++;
                 }
                 else
@@ -322,10 +322,10 @@ void KeyFrame_UpdateConnections(KeyFrame *pKeyFrame)
         if(!pMP)
             continue;
 
-        if(pMP->isBad())
+        if(MapPoint_isBad(pMP))
             continue;
 
-        map<KeyFrame*,size_t> observations = pMP->GetObservations();
+        map<KeyFrame*,size_t> observations = MapPoint_GetObservations(pMP);
 
         for(map<KeyFrame*,size_t>::iterator mit=observations.begin(), mend=observations.end(); mit!=mend; mit++)
         {
@@ -484,7 +484,7 @@ void KeyFrame_SetBadFlag(KeyFrame* pKeyFrame)
 
     for(size_t i=0; i<pKeyFrame->mvpMapPoints.size(); i++)
         if(pKeyFrame->mvpMapPoints[i])
-            pKeyFrame->mvpMapPoints[i]->EraseObservation(pKeyFrame);
+            MapPoint_EraseObservation(pKeyFrame->mvpMapPoints[i], pKeyFrame);
     {
         unique_lock<mutex> lock(pKeyFrame->mMutexConnections);
         unique_lock<mutex> lock1(pKeyFrame->mMutexFeatures);
@@ -667,7 +667,7 @@ float KeyFrame_ComputeSceneMedianDepth(KeyFrame* pKeyFrame,const int q)
         if(pKeyFrame->mvpMapPoints[i])
         {
             MapPoint* pMP = pKeyFrame->mvpMapPoints[i];
-            cv::Mat x3Dw = pMP->GetWorldPos();
+            cv::Mat x3Dw = MapPoint_GetWorldPos(pMP);
             float z = Rcw2.dot(x3Dw)+zcw;
             vDepths.push_back(z);
         }

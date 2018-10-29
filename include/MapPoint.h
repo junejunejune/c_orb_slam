@@ -36,52 +36,8 @@ class Map;
 class Frame;
 
 
-class MapPoint
+struct MapPoint
 {
-public:
-    MapPoint(const cv::Mat &Pos, KeyFrame* pRefKF, Map* pMap);
-    MapPoint(const cv::Mat &Pos,  Map* pMap, Frame* pFrame, const int &idxF);
-
-    void SetWorldPos(const cv::Mat &Pos);
-    cv::Mat GetWorldPos();
-
-    cv::Mat GetNormal();
-    KeyFrame* GetReferenceKeyFrame();
-
-    std::map<KeyFrame*,size_t> GetObservations();
-    int Observations();
-
-    void AddObservation(KeyFrame* pKF,size_t idx);
-    void EraseObservation(KeyFrame* pKF);
-
-    int GetIndexInKeyFrame(KeyFrame* pKF);
-    bool IsInKeyFrame(KeyFrame* pKF);
-
-    void SetBadFlag();
-    bool isBad();
-
-    void Replace(MapPoint* pMP);    
-    MapPoint* GetReplaced();
-
-    void IncreaseVisible(int n=1);
-    void IncreaseFound(int n=1);
-    float GetFoundRatio();
-    inline int GetFound(){
-        return mnFound;
-    }
-
-    void ComputeDistinctiveDescriptors();
-
-    cv::Mat GetDescriptor();
-
-    void UpdateNormalAndDepth();
-
-    float GetMinDistanceInvariance();
-    float GetMaxDistanceInvariance();
-    int PredictScale(const float &currentDist, KeyFrame*pKF);
-    int PredictScale(const float &currentDist, Frame* pF);
-
-public:
     long unsigned int mnId;
     static long unsigned int nNextId;
     long int mnFirstKFid;
@@ -109,10 +65,7 @@ public:
     cv::Mat mPosGBA;
     long unsigned int mnBAGlobalForKF;
 
-
     static std::mutex mGlobalMutex;
-
-protected:    
 
      // Position in absolute coordinates
      cv::Mat mWorldPos;
@@ -146,6 +99,48 @@ protected:
      std::mutex mMutexPos;
      std::mutex mMutexFeatures;
 };
+    void MapPoint_init_1(MapPoint* pMPT,const cv::Mat &Pos, KeyFrame* pRefKF, Map* pMap);
+    void MapPoint_init_2(MapPoint* pMPT,const cv::Mat &Pos,  Map* pMap, Frame* pFrame, const int &idxF);
+
+    void MapPoint_SetWorldPos(MapPoint* pMPT,const cv::Mat &Pos);
+    cv::Mat MapPoint_GetWorldPos(MapPoint* pMPT);
+
+    cv::Mat MapPoint_GetNormal(MapPoint* pMPT);
+    KeyFrame* MapPoint_GetReferenceKeyFrame(MapPoint* pMPT);
+
+    std::map<KeyFrame*,size_t> MapPoint_GetObservations(MapPoint* pMPT);
+    int MapPoint_Observations(MapPoint* pMPT);
+
+    void MapPoint_AddObservation(MapPoint* pMPT,KeyFrame* pKF,size_t idx);
+    void MapPoint_EraseObservation(MapPoint* pMPT,KeyFrame* pKF);
+
+    int MapPoint_GetIndexInKeyFrame(MapPoint* pMPT,KeyFrame* pKF);
+    bool MapPoint_IsInKeyFrame(MapPoint* pMPT,KeyFrame* pKF);
+
+    void MapPoint_SetBadFlag(MapPoint* pMPT);
+    bool MapPoint_isBad(MapPoint* pMPT);
+
+    void MapPoint_Replace(MapPoint* pMPT,MapPoint* pMP);    
+    MapPoint* MapPoint_GetReplaced(MapPoint* pMPT);
+
+    void MapPoint_IncreaseVisible(MapPoint* pMPT,int n=1);
+    void MapPoint_IncreaseFound(MapPoint* pMPT,int n=1);
+    float MapPoint_GetFoundRatio(MapPoint* pMPT);
+    inline int MapPoint_GetFound(MapPoint* pMPT){
+        return pMPT->mnFound;
+    }
+
+    void MapPoint_ComputeDistinctiveDescriptors(MapPoint* pMPT);
+
+    cv::Mat MapPoint_GetDescriptor(MapPoint* pMPT);
+
+    void MapPoint_UpdateNormalAndDepth(MapPoint* pMPT);
+
+    float MapPoint_GetMinDistanceInvariance(MapPoint* pMPT);
+    float MapPoint_GetMaxDistanceInvariance(MapPoint* pMPT);
+    int MapPoint_PredictScale(MapPoint* pMPT,const float &currentDist, KeyFrame*pKF);
+    int MapPoint_PredictScale(MapPoint* pMPT,const float &currentDist, Frame* pF);
+
 
 } //namespace ORB_SLAM
 

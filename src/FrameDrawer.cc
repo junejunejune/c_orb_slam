@@ -190,7 +190,7 @@ void FrameDrawer_Update(FrameDrawer* pFD, Tracking *pTracker)
             {
                 if(!pTracker->mCurrentFrame.mvbOutlier[i])
                 {
-                    if(pMP->Observations()>0)
+                    if(MapPoint_Observations(pMP)>0)
                         pFD->mvbMap[i]=true;
                     else
                         pFD->mvbVO[i]=true;
