@@ -40,97 +40,21 @@ class MapPoint;
 class Frame;
 class KeyFrameDatabase;
 
-class KeyFrame
+struct KeyFrame
 {
-public:
-    KeyFrame(Frame &F, Map* pMap, KeyFrameDatabase* pKFDB);
-
-    // Pose functions
-    void SetPose(const cv::Mat &Tcw);
-    cv::Mat GetPose();
-    cv::Mat GetPoseInverse();
-    cv::Mat GetCameraCenter();
-    cv::Mat GetStereoCenter();
-    cv::Mat GetRotation();
-    cv::Mat GetTranslation();
-
-    // Bag of Words Representation
-    void ComputeBoW();
-
-    // Covisibility graph functions
-    void AddConnection(KeyFrame* pKF, const int &weight);
-    void EraseConnection(KeyFrame* pKF);
-    void UpdateConnections();
-    void UpdateBestCovisibles();
-    std::set<KeyFrame *> GetConnectedKeyFrames();
-    std::vector<KeyFrame* > GetVectorCovisibleKeyFrames();
-    std::vector<KeyFrame*> GetBestCovisibilityKeyFrames(const int &N);
-    std::vector<KeyFrame*> GetCovisiblesByWeight(const int &w);
-    int GetWeight(KeyFrame* pKF);
-
-    // Spanning tree functions
-    void AddChild(KeyFrame* pKF);
-    void EraseChild(KeyFrame* pKF);
-    void ChangeParent(KeyFrame* pKF);
-    std::set<KeyFrame*> GetChilds();
-    KeyFrame* GetParent();
-    bool hasChild(KeyFrame* pKF);
-
-    // Loop Edges
-    void AddLoopEdge(KeyFrame* pKF);
-    std::set<KeyFrame*> GetLoopEdges();
-
-    // MapPoint observation functions
-    void AddMapPoint(MapPoint* pMP, const size_t &idx);
-    void EraseMapPointMatch(const size_t &idx);
-    void EraseMapPointMatch(MapPoint* pMP);
-    void ReplaceMapPointMatch(const size_t &idx, MapPoint* pMP);
-    std::set<MapPoint*> GetMapPoints();
-    std::vector<MapPoint*> GetMapPointMatches();
-    int TrackedMapPoints(const int &minObs);
-    MapPoint* GetMapPoint(const size_t &idx);
-
-    // KeyPoint functions
-    std::vector<size_t> GetFeaturesInArea(const float &x, const float  &y, const float  &r) const;
-    cv::Mat UnprojectStereo(int i);
-
-    // Image
-    bool IsInImage(const float &x, const float &y) const;
-
-    // Enable/Disable bad flag changes
-    void SetNotErase();
-    void SetErase();
-
-    // Set/check bad flag
-    void SetBadFlag();
-    bool isBad();
-
-    // Compute Scene Depth (q=2 median). Used in monocular.
-    float ComputeSceneMedianDepth(const int q);
-
-    static bool weightComp( int a, int b){
-        return a>b;
-    }
-
-    static bool lId(KeyFrame* pKF1, KeyFrame* pKF2){
-        return pKF1->mnId<pKF2->mnId;
-    }
-
 
     // The following variables are accesed from only 1 thread or never change (no mutex needed).
-public:
-
     static long unsigned int nNextId;
     long unsigned int mnId;
-    const long unsigned int mnFrameId;
+    long unsigned int mnFrameId;
 
-    const double mTimeStamp;
+    double mTimeStamp;
 
     // Grid (to speed up feature matching)
-    const int mnGridCols;
-    const int mnGridRows;
-    const float mfGridElementWidthInv;
-    const float mfGridElementHeightInv;
+    int mnGridCols;
+    int mnGridRows;
+    float mfGridElementWidthInv;
+    float mfGridElementHeightInv;
 
     // Variables used by the tracking
     long unsigned int mnTrackReferenceForFrame;
@@ -154,17 +78,17 @@ public:
     long unsigned int mnBAGlobalForKF;
 
     // Calibration parameters
-    const float fx, fy, cx, cy, invfx, invfy, mbf, mb, mThDepth;
+    float fx, fy, cx, cy, invfx, invfy, mbf, mb, mThDepth;
 
     // Number of KeyPoints
-    const int N;
+    int N;
 
     // KeyPoints, stereo coordinate and descriptors (all associated by an index)
-    const std::vector<cv::KeyPoint> mvKeys;
-    const std::vector<cv::KeyPoint> mvKeysUn;
-    const std::vector<float> mvuRight; // negative value for monocular points
-    const std::vector<float> mvDepth; // negative value for monocular points
-    const cv::Mat mDescriptors;
+    std::vector<cv::KeyPoint> mvKeys;
+    std::vector<cv::KeyPoint> mvKeysUn;
+    std::vector<float> mvuRight; // negative value for monocular points
+    std::vector<float> mvDepth; // negative value for monocular points
+    cv::Mat mDescriptors;
 
     //BoW
     DBoW2::BowVector mBowVec;
@@ -174,23 +98,22 @@ public:
     cv::Mat mTcp;
 
     // Scale
-    const int mnScaleLevels;
-    const float mfScaleFactor;
-    const float mfLogScaleFactor;
-    const std::vector<float> mvScaleFactors;
-    const std::vector<float> mvLevelSigma2;
-    const std::vector<float> mvInvLevelSigma2;
+    int mnScaleLevels;
+    float mfScaleFactor;
+    float mfLogScaleFactor;
+    std::vector<float> mvScaleFactors;
+    std::vector<float> mvLevelSigma2;
+    std::vector<float> mvInvLevelSigma2;
 
     // Image bounds and calibration
-    const int mnMinX;
-    const int mnMinY;
-    const int mnMaxX;
-    const int mnMaxY;
-    const cv::Mat mK;
+    int mnMinX;
+    int mnMinY;
+    int mnMaxX;
+    int mnMaxY;
+    cv::Mat mK;
 
 
     // The following variables need to be accessed trough a mutex to be thread safe.
-protected:
 
     // SE3 Pose and camera center
     cv::Mat Tcw;
@@ -232,6 +155,75 @@ protected:
     std::mutex mMutexConnections;
     std::mutex mMutexFeatures;
 };
+    void KeyFrame_init(KeyFrame *pKeyFrame, Frame &F, Map* pMap, KeyFrameDatabase* pKFDB);
+
+    // Pose functions
+    void KeyFrame_SetPose(KeyFrame *pKeyFrame,const cv::Mat &Tcw);
+    cv::Mat KeyFrame_GetPose(KeyFrame *pKeyFrame);
+    cv::Mat KeyFrame_GetPoseInverse(KeyFrame *pKeyFrame);
+    cv::Mat KeyFrame_GetCameraCenter(KeyFrame *pKeyFrame);
+    cv::Mat KeyFrame_GetStereoCenter(KeyFrame *pKeyFrame);
+    cv::Mat KeyFrame_GetRotation(KeyFrame *pKeyFrame);
+    cv::Mat KeyFrame_GetTranslation(KeyFrame *pKeyFrame);
+
+    // Bag of Words Representation
+    void KeyFrame_ComputeBoW(KeyFrame *pKeyFrame);
+
+    // Covisibility graph functions
+    void KeyFrame_AddConnection(KeyFrame *pKeyFrame,KeyFrame* pKF, const int &weight);
+    void KeyFrame_EraseConnection(KeyFrame *pKeyFrame,KeyFrame* pKF);
+    void KeyFrame_UpdateConnections(KeyFrame *pKeyFrame);
+    void KeyFrame_UpdateBestCovisibles(KeyFrame *pKeyFrame);
+    std::set<KeyFrame *> KeyFrame_GetConnectedKeyFrames(KeyFrame *pKeyFrame);
+    std::vector<KeyFrame* > KeyFrame_GetVectorCovisibleKeyFrames(KeyFrame *pKeyFrame);
+    std::vector<KeyFrame*> KeyFrame_GetBestCovisibilityKeyFrames(KeyFrame *pKeyFrame,const int &N);
+    std::vector<KeyFrame*> KeyFrame_GetCovisiblesByWeight(KeyFrame *pKeyFrame,const int &w);
+    int KeyFrame_GetWeight(KeyFrame *pKeyFrame,KeyFrame* pKF);
+
+    // Spanning tree functions
+    void KeyFrame_AddChild(KeyFrame *pKeyFrame,KeyFrame* pKF);
+    void KeyFrame_EraseChild(KeyFrame *pKeyFrame,KeyFrame* pKF);
+    void KeyFrame_ChangeParent(KeyFrame *pKeyFrame,KeyFrame* pKF);
+    std::set<KeyFrame*> KeyFrame_GetChilds(KeyFrame *pKeyFrame);
+    KeyFrame* KeyFrame_GetParent(KeyFrame *pKeyFrame);
+    bool KeyFrame_hasChild(KeyFrame *pKeyFrame,KeyFrame* pKF);
+
+    // Loop Edges
+    void KeyFrame_AddLoopEdge(KeyFrame *pKeyFrame,KeyFrame* pKF);
+    std::set<KeyFrame*> KeyFrame_GetLoopEdges(KeyFrame *pKeyFrame);
+
+    // MapPoint observation functions
+    void KeyFrame_AddMapPoint(KeyFrame *pKeyFrame,MapPoint* pMP, const size_t &idx);
+    void KeyFrame_EraseMapPointMatch(KeyFrame *pKeyFrame,const size_t &idx);
+    void KeyFrame_EraseMapPointMatch(KeyFrame *pKeyFrame,MapPoint* pMP);
+    void KeyFrame_ReplaceMapPointMatch(KeyFrame *pKeyFrame,const size_t &idx, MapPoint* pMP);
+    std::set<MapPoint*> KeyFrame_GetMapPoints(KeyFrame *pKeyFrame);
+    std::vector<MapPoint*> KeyFrame_GetMapPointMatches(KeyFrame *pKeyFrame);
+    int KeyFrame_TrackedMapPoints(KeyFrame *pKeyFrame,const int &minObs);
+    MapPoint* KeyFrame_GetMapPoint(KeyFrame *pKeyFrame,const size_t &idx);
+
+    // KeyPoint functions
+    std::vector<size_t> KeyFrame_GetFeaturesInArea(KeyFrame *pKeyFrame,const float &x, const float  &y, const float  &r);
+    cv::Mat KeyFrame_UnprojectStereo(KeyFrame *pKeyFrame,int i);
+
+    // Image
+    bool KeyFrame_IsInImage(KeyFrame *pKeyFrame,const float &x, const float &y);
+
+    // Enable/Disable bad flag changes
+    void KeyFrame_SetNotErase(KeyFrame *pKeyFrame);
+    void KeyFrame_SetErase(KeyFrame *pKeyFrame);
+
+    // Set/check bad flag
+    void KeyFrame_SetBadFlag(KeyFrame *pKeyFrame);
+    bool KeyFrame_isBad(KeyFrame *pKeyFrame);
+
+    // Compute Scene Depth (q=2 median). Used in monocular.
+    float KeyFrame_ComputeSceneMedianDepth(KeyFrame *pKeyFrame,const int q);
+
+    bool KeyFrame_weightComp( int a, int b);
+
+    bool KeyFrame_lId(KeyFrame* pKF1, KeyFrame* pKF2);
+
 
 } //namespace ORB_SLAM
 

@@ -161,7 +161,7 @@ void MapPoint::SetBadFlag()
     for(map<KeyFrame*,size_t>::iterator mit=obs.begin(), mend=obs.end(); mit!=mend; mit++)
     {
         KeyFrame* pKF = mit->first;
-        pKF->EraseMapPointMatch(mit->second);
+        KeyFrame_EraseMapPointMatch(pKF,mit->second);
     }
 
     Map_EraseMapPoint(mpMap,this);
@@ -199,12 +199,12 @@ void MapPoint::Replace(MapPoint* pMP)
 
         if(!pMP->IsInKeyFrame(pKF))
         {
-            pKF->ReplaceMapPointMatch(mit->second, pMP);
+            KeyFrame_ReplaceMapPointMatch(pKF, mit->second, pMP);
             pMP->AddObservation(pKF,mit->second);
         }
         else
         {
-            pKF->EraseMapPointMatch(mit->second);
+            KeyFrame_EraseMapPointMatch(pKF,mit->second);
         }
     }
     pMP->IncreaseFound(nfound);
@@ -262,7 +262,7 @@ void MapPoint::ComputeDistinctiveDescriptors()
     {
         KeyFrame* pKF = mit->first;
 
-        if(!pKF->isBad())
+        if(!KeyFrame_isBad(pKF))
             vDescriptors.push_back(pKF->mDescriptors.row(mit->second));
     }
 
@@ -350,13 +350,13 @@ void MapPoint::UpdateNormalAndDepth()
     for(map<KeyFrame*,size_t>::iterator mit=observations.begin(), mend=observations.end(); mit!=mend; mit++)
     {
         KeyFrame* pKF = mit->first;
-        cv::Mat Owi = pKF->GetCameraCenter();
+        cv::Mat Owi = KeyFrame_GetCameraCenter(pKF);
         cv::Mat normali = mWorldPos - Owi;
         normal = normal + normali/cv::norm(normali);
         n++;
     }
 
-    cv::Mat PC = Pos - pRefKF->GetCameraCenter();
+    cv::Mat PC = Pos - KeyFrame_GetCameraCenter(pRefKF);
     const float dist = cv::norm(PC);
     const int level = pRefKF->mvKeysUn[observations[pRefKF]].octave;
     const float levelScaleFactor =  pRefKF->mvScaleFactors[level];

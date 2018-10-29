@@ -44,7 +44,7 @@ void Sim3Solver_init(Sim3Solver* mpSim3Solver,KeyFrame *pKF1, KeyFrame *pKF2, co
     mpSim3Solver->mpKF1 = pKF1;
     mpSim3Solver->mpKF2 = pKF2;
 
-    vector<MapPoint*> vpKeyFrameMP1 = pKF1->GetMapPointMatches();
+    vector<MapPoint*> vpKeyFrameMP1 = KeyFrame_GetMapPointMatches(pKF1);
 
     mpSim3Solver->mN1 = vpMatched12.size();
 
@@ -55,10 +55,10 @@ void Sim3Solver_init(Sim3Solver* mpSim3Solver,KeyFrame *pKF1, KeyFrame *pKF2, co
     mpSim3Solver->mvX3Dc1.reserve(mpSim3Solver->mN1);
     mpSim3Solver->mvX3Dc2.reserve(mpSim3Solver->mN1);
 
-    cv::Mat Rcw1 = pKF1->GetRotation();
-    cv::Mat tcw1 = pKF1->GetTranslation();
-    cv::Mat Rcw2 = pKF2->GetRotation();
-    cv::Mat tcw2 = pKF2->GetTranslation();
+    cv::Mat Rcw1 = KeyFrame_GetRotation(pKF1);
+    cv::Mat tcw1 = KeyFrame_GetTranslation(pKF1);
+    cv::Mat Rcw2 = KeyFrame_GetRotation(pKF2);
+    cv::Mat tcw2 = KeyFrame_GetTranslation(pKF2);
 
     mpSim3Solver->mvAllIndices.reserve(mpSim3Solver->mN1);
 

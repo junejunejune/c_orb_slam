@@ -162,7 +162,7 @@ bool ORBmatcher_CheckDistEpipolarLine(ORBmatcher* mpORBmatcher,const cv::KeyPoin
 
 int ORBmatcher_SearchByBoW(ORBmatcher* mpORBmatcher,KeyFrame* pKF,Frame &F, vector<MapPoint*> &vpMapPointMatches)
 {
-    const vector<MapPoint*> vpMapPointsKF = pKF->GetMapPointMatches();
+    const vector<MapPoint*> vpMapPointsKF = KeyFrame_GetMapPointMatches(pKF);
 
     vpMapPointMatches = vector<MapPoint*>(F.N,static_cast<MapPoint*>(NULL));
 
@@ -340,7 +340,7 @@ int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,KeyFrame* pKF, cv::Ma
         const float v = fy*y+cy;
 
         // Point must be inside the image
-        if(!pKF->IsInImage(u,v))
+        if(!KeyFrame_IsInImage(pKF,u,v))
             continue;
 
         // Depth must be inside the scale invariance region of the point
@@ -363,7 +363,7 @@ int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,KeyFrame* pKF, cv::Ma
         // Search in a radius
         const float radius = th*pKF->mvScaleFactors[nPredictedLevel];
 
-        const vector<size_t> vIndices = pKF->GetFeaturesInArea(u,v,radius);
+        const vector<size_t> vIndices = KeyFrame_GetFeaturesInArea(pKF,u,v,radius);
 
         if(vIndices.empty())
             continue;
@@ -527,12 +527,12 @@ int ORBmatcher_SearchByBoW(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, KeyFrame *pK
 {
     const vector<cv::KeyPoint> &vKeysUn1 = pKF1->mvKeysUn;
     const DBoW2::FeatureVector &vFeatVec1 = pKF1->mFeatVec;
-    const vector<MapPoint*> vpMapPoints1 = pKF1->GetMapPointMatches();
+    const vector<MapPoint*> vpMapPoints1 = KeyFrame_GetMapPointMatches(pKF1);
     const cv::Mat &Descriptors1 = pKF1->mDescriptors;
 
     const vector<cv::KeyPoint> &vKeysUn2 = pKF2->mvKeysUn;
     const DBoW2::FeatureVector &vFeatVec2 = pKF2->mFeatVec;
-    const vector<MapPoint*> vpMapPoints2 = pKF2->GetMapPointMatches();
+    const vector<MapPoint*> vpMapPoints2 = KeyFrame_GetMapPointMatches(pKF2);
     const cv::Mat &Descriptors2 = pKF2->mDescriptors;
 
     vpMatches12 = vector<MapPoint*>(vpMapPoints1.size(),static_cast<MapPoint*>(NULL));
@@ -665,9 +665,9 @@ int ORBmatcher_SearchForTriangulation(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, K
     const DBoW2::FeatureVector &vFeatVec2 = pKF2->mFeatVec;
 
     //Compute epipole in second image
-    cv::Mat Cw = pKF1->GetCameraCenter();
-    cv::Mat R2w = pKF2->GetRotation();
-    cv::Mat t2w = pKF2->GetTranslation();
+    cv::Mat Cw = KeyFrame_GetCameraCenter(pKF1);
+    cv::Mat R2w = KeyFrame_GetRotation(pKF2);
+    cv::Mat t2w = KeyFrame_GetTranslation(pKF2);
     cv::Mat C2 = R2w*Cw+t2w;
     const float invz = 1.0f/C2.at<float>(2);
     const float ex =pKF2->fx*C2.at<float>(0)*invz+pKF2->cx;
@@ -700,7 +700,7 @@ int ORBmatcher_SearchForTriangulation(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, K
             {
                 const size_t idx1 = f1it->second[i1];
                 
-                MapPoint* pMP1 = pKF1->GetMapPoint(idx1);
+                MapPoint* pMP1 = KeyFrame_GetMapPoint(pKF1,idx1);
                 
                 // If there is already a MapPoint skip
                 if(pMP1)
@@ -723,7 +723,7 @@ int ORBmatcher_SearchForTriangulation(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, K
                 {
                     size_t idx2 = f2it->second[i2];
                     
-                    MapPoint* pMP2 = pKF2->GetMapPoint(idx2);
+                    MapPoint* pMP2 = KeyFrame_GetMapPoint(pKF2, idx2);
                     
                     // If we have already matched or there is a MapPoint skip
                     if(vbMatched2[idx2] || pMP2)
@@ -828,8 +828,8 @@ int ORBmatcher_SearchForTriangulation(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, K
 
 int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, const vector<MapPoint *> &vpMapPoints, const float th)
 {
-    cv::Mat Rcw = pKF->GetRotation();
-    cv::Mat tcw = pKF->GetTranslation();
+    cv::Mat Rcw = KeyFrame_GetRotation(pKF);
+    cv::Mat tcw = KeyFrame_GetTranslation(pKF);
 
     const float &fx = pKF->fx;
     const float &fy = pKF->fy;
@@ -837,7 +837,7 @@ int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, const vector<MapPoin
     const float &cy = pKF->cy;
     const float &bf = pKF->mbf;
 
-    cv::Mat Ow = pKF->GetCameraCenter();
+    cv::Mat Ow = KeyFrame_GetCameraCenter(pKF);
 
     int nFused=0;
 
@@ -868,7 +868,7 @@ int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, const vector<MapPoin
         const float v = fy*y+cy;
 
         // Point must be inside the image
-        if(!pKF->IsInImage(u,v))
+        if(!KeyFrame_IsInImage(pKF,u,v))
             continue;
 
         const float ur = u-bf*invz;
@@ -893,7 +893,7 @@ int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, const vector<MapPoin
         // Search in a radius
         const float radius = th*pKF->mvScaleFactors[nPredictedLevel];
 
-        const vector<size_t> vIndices = pKF->GetFeaturesInArea(u,v,radius);
+        const vector<size_t> vIndices = KeyFrame_GetFeaturesInArea(pKF,u,v,radius);
 
         if(vIndices.empty())
             continue;
@@ -955,7 +955,7 @@ int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, const vector<MapPoin
         // If there is already a MapPoint replace otherwise add new measurement
         if(bestDist<=TH_LOW)
         {
-            MapPoint* pMPinKF = pKF->GetMapPoint(bestIdx);
+            MapPoint* pMPinKF = KeyFrame_GetMapPoint(pKF,bestIdx);
             if(pMPinKF)
             {
                 if(!pMPinKF->isBad())
@@ -969,7 +969,7 @@ int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, const vector<MapPoin
             else
             {
                 pMP->AddObservation(pKF,bestIdx);
-                pKF->AddMapPoint(pMP,bestIdx);
+                KeyFrame_AddMapPoint(pKF,pMP,bestIdx);
             }
             nFused++;
         }
@@ -994,7 +994,7 @@ int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, cv::Mat Scw, const v
     cv::Mat Ow = -Rcw.t()*tcw;
 
     // Set of MapPoints already found in the KeyFrame
-    const set<MapPoint*> spAlreadyFound = pKF->GetMapPoints();
+    const set<MapPoint*> spAlreadyFound = KeyFrame_GetMapPoints(pKF);
 
     int nFused=0;
 
@@ -1028,7 +1028,7 @@ int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, cv::Mat Scw, const v
         const float v = fy*y+cy;
 
         // Point must be inside the image
-        if(!pKF->IsInImage(u,v))
+        if(!KeyFrame_IsInImage(pKF,u,v))
             continue;
 
         // Depth must be inside the scale pyramid of the image
@@ -1052,7 +1052,7 @@ int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, cv::Mat Scw, const v
         // Search in a radius
         const float radius = th*pKF->mvScaleFactors[nPredictedLevel];
 
-        const vector<size_t> vIndices = pKF->GetFeaturesInArea(u,v,radius);
+        const vector<size_t> vIndices = KeyFrame_GetFeaturesInArea(pKF, u,v,radius);
 
         if(vIndices.empty())
             continue;
@@ -1085,7 +1085,7 @@ int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, cv::Mat Scw, const v
         // If there is already a MapPoint replace otherwise add new measurement
         if(bestDist<=TH_LOW)
         {
-            MapPoint* pMPinKF = pKF->GetMapPoint(bestIdx);
+            MapPoint* pMPinKF = KeyFrame_GetMapPoint(pKF,bestIdx);
             if(pMPinKF)
             {
                 if(!pMPinKF->isBad())
@@ -1094,7 +1094,7 @@ int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, cv::Mat Scw, const v
             else
             {
                 pMP->AddObservation(pKF,bestIdx);
-                pKF->AddMapPoint(pMP,bestIdx);
+                KeyFrame_AddMapPoint(pKF, pMP,bestIdx);
             }
             nFused++;
         }
@@ -1112,22 +1112,22 @@ int ORBmatcher_SearchBySim3(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, KeyFrame *p
     const float &cy = pKF1->cy;
 
     // Camera 1 from world
-    cv::Mat R1w = pKF1->GetRotation();
-    cv::Mat t1w = pKF1->GetTranslation();
+    cv::Mat R1w = KeyFrame_GetRotation(pKF1);
+    cv::Mat t1w = KeyFrame_GetTranslation(pKF1);
 
     //Camera 2 from world
-    cv::Mat R2w = pKF2->GetRotation();
-    cv::Mat t2w = pKF2->GetTranslation();
+    cv::Mat R2w = KeyFrame_GetRotation(pKF2);
+    cv::Mat t2w = KeyFrame_GetTranslation(pKF2);
 
     //Transformation between cameras
     cv::Mat sR12 = s12*R12;
     cv::Mat sR21 = (1.0/s12)*R12.t();
     cv::Mat t21 = -sR21*t12;
 
-    const vector<MapPoint*> vpMapPoints1 = pKF1->GetMapPointMatches();
+    const vector<MapPoint*> vpMapPoints1 = KeyFrame_GetMapPointMatches(pKF1);
     const int N1 = vpMapPoints1.size();
 
-    const vector<MapPoint*> vpMapPoints2 = pKF2->GetMapPointMatches();
+    const vector<MapPoint*> vpMapPoints2 = KeyFrame_GetMapPointMatches(pKF2);
     const int N2 = vpMapPoints2.size();
 
     vector<bool> vbAlreadyMatched1(N1,false);
@@ -1175,7 +1175,7 @@ int ORBmatcher_SearchBySim3(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, KeyFrame *p
         const float v = fy*y+cy;
 
         // Point must be inside the image
-        if(!pKF2->IsInImage(u,v))
+        if(!KeyFrame_IsInImage(pKF2,u,v))
             continue;
 
         const float maxDistance = pMP->GetMaxDistanceInvariance();
@@ -1192,7 +1192,7 @@ int ORBmatcher_SearchBySim3(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, KeyFrame *p
         // Search in a radius
         const float radius = th*pKF2->mvScaleFactors[nPredictedLevel];
 
-        const vector<size_t> vIndices = pKF2->GetFeaturesInArea(u,v,radius);
+        const vector<size_t> vIndices = KeyFrame_GetFeaturesInArea(pKF2, u,v,radius);
 
         if(vIndices.empty())
             continue;
@@ -1255,7 +1255,7 @@ int ORBmatcher_SearchBySim3(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, KeyFrame *p
         const float v = fy*y+cy;
 
         // Point must be inside the image
-        if(!pKF1->IsInImage(u,v))
+        if(!KeyFrame_IsInImage(pKF1,u,v))
             continue;
 
         const float maxDistance = pMP->GetMaxDistanceInvariance();
@@ -1272,7 +1272,7 @@ int ORBmatcher_SearchBySim3(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, KeyFrame *p
         // Search in a radius of 2.5*sigma(ScaleLevel)
         const float radius = th*pKF1->mvScaleFactors[nPredictedLevel];
 
-        const vector<size_t> vIndices = pKF1->GetFeaturesInArea(u,v,radius);
+        const vector<size_t> vIndices = KeyFrame_GetFeaturesInArea(pKF1,u,v,radius);
 
         if(vIndices.empty())
             continue;
@@ -1487,7 +1487,7 @@ int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame &CurrentFrame, 
         rotHist[i].reserve(500);
     const float factor = 1.0f/HISTO_LENGTH;
 
-    const vector<MapPoint*> vpMPs = pKF->GetMapPointMatches();
+    const vector<MapPoint*> vpMPs = KeyFrame_GetMapPointMatches(pKF);
 
     for(size_t i=0, iend=vpMPs.size(); i<iend; i++)
     {

@@ -17,7 +17,6 @@
 * You should have received a copy of the GNU General Public License
 * along with ORB-SLAM2. If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "LocalMapping.h"
 #include "LoopClosing.h"
 #include "ORBmatcher.h"
@@ -134,10 +133,10 @@ void LocalMapping::ProcessNewKeyFrame()
     }
 
     // Compute Bags of Words structures
-    mpCurrentKeyFrame->ComputeBoW();
+    KeyFrame_ComputeBoW(mpCurrentKeyFrame);
 
     // Associate MapPoints to the new keyframe and update normal and descriptor
-    const vector<MapPoint*> vpMapPointMatches = mpCurrentKeyFrame->GetMapPointMatches();
+    const vector<MapPoint*> vpMapPointMatches = KeyFrame_GetMapPointMatches(mpCurrentKeyFrame);
 
     for(size_t i=0; i<vpMapPointMatches.size(); i++)
     {
@@ -161,7 +160,7 @@ void LocalMapping::ProcessNewKeyFrame()
     }    
 
     // Update links in the Covisibility Graph
-    mpCurrentKeyFrame->UpdateConnections();
+    KeyFrame_UpdateConnections(mpCurrentKeyFrame);
 
     // Insert Keyframe in Map
     Map_AddKeyFrame(mpMap,mpCurrentKeyFrame);
@@ -210,7 +209,7 @@ void LocalMapping::CreateNewMapPoints()
     int nn = 10;
     if(mbMonocular)
         nn=20;
-    const vector<KeyFrame*> vpNeighKFs = mpCurrentKeyFrame->GetBestCovisibilityKeyFrames(nn);
+    const vector<KeyFrame*> vpNeighKFs = KeyFrame_GetBestCovisibilityKeyFrames(mpCurrentKeyFrame, nn);
 
    // ORBmatcher matcher(0.6,false);
     struct ORBmatcher sORBmatcher;
@@ -218,13 +217,13 @@ void LocalMapping::CreateNewMapPoints()
     ORBmatcher_init(matcher, 0.6, true);          
   
 
-    cv::Mat Rcw1 = mpCurrentKeyFrame->GetRotation();
+    cv::Mat Rcw1 = KeyFrame_GetRotation(mpCurrentKeyFrame);
     cv::Mat Rwc1 = Rcw1.t();
-    cv::Mat tcw1 = mpCurrentKeyFrame->GetTranslation();
+    cv::Mat tcw1 = KeyFrame_GetTranslation(mpCurrentKeyFrame);
     cv::Mat Tcw1(3,4,CV_32F);
     Rcw1.copyTo(Tcw1.colRange(0,3));
     tcw1.copyTo(Tcw1.col(3));
-    cv::Mat Ow1 = mpCurrentKeyFrame->GetCameraCenter();
+    cv::Mat Ow1 = KeyFrame_GetCameraCenter(mpCurrentKeyFrame);
 
     const float &fx1 = mpCurrentKeyFrame->fx;
     const float &fy1 = mpCurrentKeyFrame->fy;
@@ -246,7 +245,7 @@ void LocalMapping::CreateNewMapPoints()
         KeyFrame* pKF2 = vpNeighKFs[i];
 
         // Check first that baseline is not too short
-        cv::Mat Ow2 = pKF2->GetCameraCenter();
+        cv::Mat Ow2 = KeyFrame_GetCameraCenter(pKF2);
         cv::Mat vBaseline = Ow2-Ow1;
         const float baseline = cv::norm(vBaseline);
 
@@ -257,7 +256,7 @@ void LocalMapping::CreateNewMapPoints()
         }
         else
         {
-            const float medianDepthKF2 = pKF2->ComputeSceneMedianDepth(2);
+            const float medianDepthKF2 = KeyFrame_ComputeSceneMedianDepth(pKF2, 2);
             const float ratioBaselineDepth = baseline/medianDepthKF2;
 
             if(ratioBaselineDepth<0.01)
@@ -271,9 +270,9 @@ void LocalMapping::CreateNewMapPoints()
         vector<pair<size_t,size_t> > vMatchedIndices;
         ORBmatcher_SearchForTriangulation(matcher, mpCurrentKeyFrame,pKF2,F12,vMatchedIndices,false);
 
-        cv::Mat Rcw2 = pKF2->GetRotation();
+        cv::Mat Rcw2 = KeyFrame_GetRotation(pKF2);
         cv::Mat Rwc2 = Rcw2.t();
-        cv::Mat tcw2 = pKF2->GetTranslation();
+        cv::Mat tcw2 = KeyFrame_GetTranslation(pKF2);
         cv::Mat Tcw2(3,4,CV_32F);
         Rcw2.copyTo(Tcw2.colRange(0,3));
         tcw2.copyTo(Tcw2.col(3));
@@ -343,11 +342,11 @@ void LocalMapping::CreateNewMapPoints()
             }
             else if(bStereo1 && cosParallaxStereo1<cosParallaxStereo2)
             {
-                x3D = mpCurrentKeyFrame->UnprojectStereo(idx1);                
+                x3D = KeyFrame_UnprojectStereo(mpCurrentKeyFrame,idx1);                
             }
             else if(bStereo2 && cosParallaxStereo2<cosParallaxStereo1)
             {
-                x3D = pKF2->UnprojectStereo(idx2);
+                x3D = KeyFrame_UnprojectStereo(pKF2, idx2);
             }
             else
                 continue; //No stereo and very low parallax
@@ -440,8 +439,8 @@ void LocalMapping::CreateNewMapPoints()
             pMP->AddObservation(mpCurrentKeyFrame,idx1);            
             pMP->AddObservation(pKF2,idx2);
 
-            mpCurrentKeyFrame->AddMapPoint(pMP,idx1);
-            pKF2->AddMapPoint(pMP,idx2);
+            KeyFrame_AddMapPoint(mpCurrentKeyFrame,pMP,idx1);
+            KeyFrame_AddMapPoint(pKF2, pMP,idx2);
 
             pMP->ComputeDistinctiveDescriptors();
 
@@ -461,22 +460,22 @@ void LocalMapping::SearchInNeighbors()
     int nn = 10;
     if(mbMonocular)
         nn=20;
-    const vector<KeyFrame*> vpNeighKFs = mpCurrentKeyFrame->GetBestCovisibilityKeyFrames(nn);
+    const vector<KeyFrame*> vpNeighKFs = KeyFrame_GetBestCovisibilityKeyFrames(mpCurrentKeyFrame,nn);
     vector<KeyFrame*> vpTargetKFs;
     for(vector<KeyFrame*>::const_iterator vit=vpNeighKFs.begin(), vend=vpNeighKFs.end(); vit!=vend; vit++)
     {
         KeyFrame* pKFi = *vit;
-        if(pKFi->isBad() || pKFi->mnFuseTargetForKF == mpCurrentKeyFrame->mnId)
+        if(KeyFrame_isBad(pKFi) || pKFi->mnFuseTargetForKF == mpCurrentKeyFrame->mnId)
             continue;
         vpTargetKFs.push_back(pKFi);
         pKFi->mnFuseTargetForKF = mpCurrentKeyFrame->mnId;
 
         // Extend to some second neighbors
-        const vector<KeyFrame*> vpSecondNeighKFs = pKFi->GetBestCovisibilityKeyFrames(5);
+        const vector<KeyFrame*> vpSecondNeighKFs = KeyFrame_GetBestCovisibilityKeyFrames(pKFi, 5);
         for(vector<KeyFrame*>::const_iterator vit2=vpSecondNeighKFs.begin(), vend2=vpSecondNeighKFs.end(); vit2!=vend2; vit2++)
         {
             KeyFrame* pKFi2 = *vit2;
-            if(pKFi2->isBad() || pKFi2->mnFuseTargetForKF==mpCurrentKeyFrame->mnId || pKFi2->mnId==mpCurrentKeyFrame->mnId)
+            if(KeyFrame_isBad(pKFi2) || pKFi2->mnFuseTargetForKF==mpCurrentKeyFrame->mnId || pKFi2->mnId==mpCurrentKeyFrame->mnId)
                 continue;
             vpTargetKFs.push_back(pKFi2);
         }
@@ -490,7 +489,7 @@ void LocalMapping::SearchInNeighbors()
     ORBmatcher_init(matcher, 0.9, true);          
   
 
-    vector<MapPoint*> vpMapPointMatches = mpCurrentKeyFrame->GetMapPointMatches();
+    vector<MapPoint*> vpMapPointMatches = KeyFrame_GetMapPointMatches(mpCurrentKeyFrame);
     for(vector<KeyFrame*>::iterator vit=vpTargetKFs.begin(), vend=vpTargetKFs.end(); vit!=vend; vit++)
     {
         KeyFrame* pKFi = *vit;
@@ -506,7 +505,7 @@ void LocalMapping::SearchInNeighbors()
     {
         KeyFrame* pKFi = *vitKF;
 
-        vector<MapPoint*> vpMapPointsKFi = pKFi->GetMapPointMatches();
+        vector<MapPoint*> vpMapPointsKFi = KeyFrame_GetMapPointMatches(pKFi);
 
         for(vector<MapPoint*>::iterator vitMP=vpMapPointsKFi.begin(), vendMP=vpMapPointsKFi.end(); vitMP!=vendMP; vitMP++)
         {
@@ -524,7 +523,7 @@ void LocalMapping::SearchInNeighbors()
 
 
     // Update points
-    vpMapPointMatches = mpCurrentKeyFrame->GetMapPointMatches();
+    vpMapPointMatches = KeyFrame_GetMapPointMatches(mpCurrentKeyFrame);
     for(size_t i=0, iend=vpMapPointMatches.size(); i<iend; i++)
     {
         MapPoint* pMP=vpMapPointMatches[i];
@@ -539,15 +538,15 @@ void LocalMapping::SearchInNeighbors()
     }
 
     // Update connections in covisibility graph
-    mpCurrentKeyFrame->UpdateConnections();
+    KeyFrame_UpdateConnections(mpCurrentKeyFrame);
 }
 
 cv::Mat LocalMapping::ComputeF12(KeyFrame *&pKF1, KeyFrame *&pKF2)
 {
-    cv::Mat R1w = pKF1->GetRotation();
-    cv::Mat t1w = pKF1->GetTranslation();
-    cv::Mat R2w = pKF2->GetRotation();
-    cv::Mat t2w = pKF2->GetTranslation();
+    cv::Mat R1w = KeyFrame_GetRotation(pKF1);
+    cv::Mat t1w = KeyFrame_GetTranslation(pKF1);
+    cv::Mat R2w = KeyFrame_GetRotation(pKF2);
+    cv::Mat t2w = KeyFrame_GetTranslation(pKF2);
 
     cv::Mat R12 = R1w*R2w.t();
     cv::Mat t12 = -R1w*R2w.t()*t2w+t1w;
@@ -644,14 +643,14 @@ void LocalMapping::KeyFrameCulling()
     // A keyframe is considered redundant if the 90% of the MapPoints it sees, are seen
     // in at least other 3 keyframes (in the same or finer scale)
     // We only consider close stereo points
-    vector<KeyFrame*> vpLocalKeyFrames = mpCurrentKeyFrame->GetVectorCovisibleKeyFrames();
+    vector<KeyFrame*> vpLocalKeyFrames = KeyFrame_GetVectorCovisibleKeyFrames(mpCurrentKeyFrame);
 
     for(vector<KeyFrame*>::iterator vit=vpLocalKeyFrames.begin(), vend=vpLocalKeyFrames.end(); vit!=vend; vit++)
     {
         KeyFrame* pKF = *vit;
         if(pKF->mnId==0)
             continue;
-        const vector<MapPoint*> vpMapPoints = pKF->GetMapPointMatches();
+        const vector<MapPoint*> vpMapPoints = KeyFrame_GetMapPointMatches(pKF);
 
         int nObs = 3;
         const int thObs=nObs;
@@ -700,7 +699,7 @@ void LocalMapping::KeyFrameCulling()
         }  
 
         if(nRedundantObservations>0.9*nMPs)
-            pKF->SetBadFlag();
+            KeyFrame_SetBadFlag(pKF);
     }
 }
 

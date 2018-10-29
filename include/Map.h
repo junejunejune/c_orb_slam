@@ -33,7 +33,7 @@ namespace ORB_SLAM2
 {
 
 class MapPoint;
-class KeyFrame;
+struct KeyFrame;
 
 struct Map
 {

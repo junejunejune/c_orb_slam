@@ -17,7 +17,6 @@
 * You should have received a copy of the GNU General Public License
 * along with ORB-SLAM2. If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "LoopClosing.h"
 
 #include "Sim3Solver.h"
@@ -107,27 +106,27 @@ bool LoopClosing::DetectLoop()
         mpCurrentKF = mlpLoopKeyFrameQueue.front();
         mlpLoopKeyFrameQueue.pop_front();
         // Avoid that a keyframe can be erased while it is being process by this thread
-        mpCurrentKF->SetNotErase();
+        KeyFrame_SetNotErase(mpCurrentKF);
     }
 
     //If the map contains less than 10 KF or less than 10 KF have passed from last loop detection
     if(mpCurrentKF->mnId<mLastLoopKFid+10)
     {
         mpKeyFrameDB->add(mpCurrentKF);
-        mpCurrentKF->SetErase();
+        KeyFrame_SetErase(mpCurrentKF);
         return false;
     }
 
     // Compute reference BoW similarity score
     // This is the lowest score to a connected keyframe in the covisibility graph
     // We will impose loop candidates to have a higher similarity than this
-    const vector<KeyFrame*> vpConnectedKeyFrames = mpCurrentKF->GetVectorCovisibleKeyFrames();
+    const vector<KeyFrame*> vpConnectedKeyFrames = KeyFrame_GetVectorCovisibleKeyFrames(mpCurrentKF);
     const DBoW2::BowVector &CurrentBowVec = mpCurrentKF->mBowVec;
     float minScore = 1;
     for(size_t i=0; i<vpConnectedKeyFrames.size(); i++)
     {
         KeyFrame* pKF = vpConnectedKeyFrames[i];
-        if(pKF->isBad())
+        if(KeyFrame_isBad(pKF))
             continue;
         const DBoW2::BowVector &BowVec = pKF->mBowVec;
 
@@ -145,7 +144,7 @@ bool LoopClosing::DetectLoop()
     {
         mpKeyFrameDB->add(mpCurrentKF);
         mvConsistentGroups.clear();
-        mpCurrentKF->SetErase();
+        KeyFrame_SetErase(mpCurrentKF);
         return false;
     }
 
@@ -161,7 +160,7 @@ bool LoopClosing::DetectLoop()
     {
         KeyFrame* pCandidateKF = vpCandidateKFs[i];
 
-        set<KeyFrame*> spCandidateGroup = pCandidateKF->GetConnectedKeyFrames();
+        set<KeyFrame*> spCandidateGroup = KeyFrame_GetConnectedKeyFrames(pCandidateKF);
         spCandidateGroup.insert(pCandidateKF);
 
         bool bEnoughConsistent = false;
@@ -216,7 +215,7 @@ bool LoopClosing::DetectLoop()
 
     if(mvpEnoughConsistentCandidates.empty())
     {
-        mpCurrentKF->SetErase();
+        KeyFrame_SetErase(mpCurrentKF);
         return false;
     }
     else
@@ -224,7 +223,7 @@ bool LoopClosing::DetectLoop()
         return true;
     }
 
-    mpCurrentKF->SetErase();
+    KeyFrame_SetErase(mpCurrentKF);
     return false;
 }
 
@@ -258,9 +257,9 @@ bool LoopClosing::ComputeSim3()
         KeyFrame* pKF = mvpEnoughConsistentCandidates[i];
 
         // avoid that local mapping erase it while it is being processed in this thread
-        pKF->SetNotErase();
+        KeyFrame_SetNotErase(pKF);
 
-        if(pKF->isBad())
+        if(KeyFrame_isBad(pKF))
         {
             vbDiscarded[i] = true;
             continue;
@@ -341,7 +340,7 @@ bool LoopClosing::ComputeSim3()
                 {
                     bMatch = true;
                     mpMatchedKF = pKF;
-                    g2o::Sim3 gSmw(Converter_toMatrix3d(pKF->GetRotation()),Converter_toVector3d(pKF->GetTranslation()),1.0);
+                    g2o::Sim3 gSmw(Converter_toMatrix3d(KeyFrame_GetRotation(pKF)),Converter_toVector3d(KeyFrame_GetTranslation(pKF)),1.0);
                     mg2oScw = gScm*gSmw;
                     mScw = Converter_toCvMat(mg2oScw);
 
@@ -355,19 +354,19 @@ bool LoopClosing::ComputeSim3()
     if(!bMatch)
     {
         for(int i=0; i<nInitialCandidates; i++)
-             mvpEnoughConsistentCandidates[i]->SetErase();
-        mpCurrentKF->SetErase();
+             KeyFrame_SetErase(mvpEnoughConsistentCandidates[i]);
+        KeyFrame_SetErase(mpCurrentKF);
         return false;
     }
 
     // Retrieve MapPoints seen in Loop Keyframe and neighbors
-    vector<KeyFrame*> vpLoopConnectedKFs = mpMatchedKF->GetVectorCovisibleKeyFrames();
+    vector<KeyFrame*> vpLoopConnectedKFs = KeyFrame_GetVectorCovisibleKeyFrames(mpMatchedKF);
     vpLoopConnectedKFs.push_back(mpMatchedKF);
     mvpLoopMapPoints.clear();
     for(vector<KeyFrame*>::iterator vit=vpLoopConnectedKFs.begin(); vit!=vpLoopConnectedKFs.end(); vit++)
     {
         KeyFrame* pKF = *vit;
-        vector<MapPoint*> vpMapPoints = pKF->GetMapPointMatches();
+        vector<MapPoint*> vpMapPoints = KeyFrame_GetMapPointMatches(pKF);
         for(size_t i=0, iend=vpMapPoints.size(); i<iend; i++)
         {
             MapPoint* pMP = vpMapPoints[i];
@@ -397,14 +396,14 @@ bool LoopClosing::ComputeSim3()
     {
         for(int i=0; i<nInitialCandidates; i++)
             if(mvpEnoughConsistentCandidates[i]!=mpMatchedKF)
-                mvpEnoughConsistentCandidates[i]->SetErase();
+                KeyFrame_SetErase(mvpEnoughConsistentCandidates[i]);
         return true;
     }
     else
     {
         for(int i=0; i<nInitialCandidates; i++)
-            mvpEnoughConsistentCandidates[i]->SetErase();
-        mpCurrentKF->SetErase();
+            KeyFrame_SetErase(mvpEnoughConsistentCandidates[i]);
+        KeyFrame_SetErase(mpCurrentKF);
         return false;
     }
 
@@ -440,15 +439,15 @@ void LoopClosing::CorrectLoop()
     }
 
     // Ensure current keyframe is updated
-    mpCurrentKF->UpdateConnections();
+    KeyFrame_UpdateConnections(mpCurrentKF);
 
     // Retrive keyframes connected to the current keyframe and compute corrected Sim3 pose by propagation
-    mvpCurrentConnectedKFs = mpCurrentKF->GetVectorCovisibleKeyFrames();
+    mvpCurrentConnectedKFs = KeyFrame_GetVectorCovisibleKeyFrames(mpCurrentKF);
     mvpCurrentConnectedKFs.push_back(mpCurrentKF);
 
     KeyFrameAndPose CorrectedSim3, NonCorrectedSim3;
     CorrectedSim3[mpCurrentKF]=mg2oScw;
-    cv::Mat Twc = mpCurrentKF->GetPoseInverse();
+    cv::Mat Twc = KeyFrame_GetPoseInverse(mpCurrentKF);
 
 
     {
@@ -459,7 +458,7 @@ void LoopClosing::CorrectLoop()
         {
             KeyFrame* pKFi = *vit;
 
-            cv::Mat Tiw = pKFi->GetPose();
+            cv::Mat Tiw = KeyFrame_GetPose(pKFi);
 
             if(pKFi!=mpCurrentKF)
             {
@@ -488,7 +487,7 @@ void LoopClosing::CorrectLoop()
 
             g2o::Sim3 g2oSiw =NonCorrectedSim3[pKFi];
 
-            vector<MapPoint*> vpMPsi = pKFi->GetMapPointMatches();
+            vector<MapPoint*> vpMPsi = KeyFrame_GetMapPointMatches(pKFi);
             for(size_t iMP=0, endMPi = vpMPsi.size(); iMP<endMPi; iMP++)
             {
                 MapPoint* pMPi = vpMPsi[iMP];
@@ -520,10 +519,10 @@ void LoopClosing::CorrectLoop()
 
             cv::Mat correctedTiw = Converter_toCvSE3(eigR,eigt);
 
-            pKFi->SetPose(correctedTiw);
+            KeyFrame_SetPose(pKFi, correctedTiw);
 
             // Make sure connections are updated
-            pKFi->UpdateConnections();
+            KeyFrame_UpdateConnections(pKFi);
         }
 
         // Start Loop Fusion
@@ -533,12 +532,12 @@ void LoopClosing::CorrectLoop()
             if(mvpCurrentMatchedPoints[i])
             {
                 MapPoint* pLoopMP = mvpCurrentMatchedPoints[i];
-                MapPoint* pCurMP = mpCurrentKF->GetMapPoint(i);
+                MapPoint* pCurMP =KeyFrame_GetMapPoint( mpCurrentKF,i);
                 if(pCurMP)
                     pCurMP->Replace(pLoopMP);
                 else
                 {
-                    mpCurrentKF->AddMapPoint(pLoopMP,i);
+                    KeyFrame_AddMapPoint(mpCurrentKF, pLoopMP,i);
                     pLoopMP->AddObservation(mpCurrentKF,i);
                     pLoopMP->ComputeDistinctiveDescriptors();
                 }
@@ -559,11 +558,11 @@ void LoopClosing::CorrectLoop()
     for(vector<KeyFrame*>::iterator vit=mvpCurrentConnectedKFs.begin(), vend=mvpCurrentConnectedKFs.end(); vit!=vend; vit++)
     {
         KeyFrame* pKFi = *vit;
-        vector<KeyFrame*> vpPreviousNeighbors = pKFi->GetVectorCovisibleKeyFrames();
+        vector<KeyFrame*> vpPreviousNeighbors = KeyFrame_GetVectorCovisibleKeyFrames(pKFi);
 
         // Update connections. Detect new links.
-        pKFi->UpdateConnections();
-        LoopConnections[pKFi]=pKFi->GetConnectedKeyFrames();
+        KeyFrame_UpdateConnections(pKFi);
+        LoopConnections[pKFi]=KeyFrame_GetConnectedKeyFrames(pKFi);
         for(vector<KeyFrame*>::iterator vit_prev=vpPreviousNeighbors.begin(), vend_prev=vpPreviousNeighbors.end(); vit_prev!=vend_prev; vit_prev++)
         {
             LoopConnections[pKFi].erase(*vit_prev);
@@ -580,8 +579,8 @@ void LoopClosing::CorrectLoop()
     Map_InformNewBigChange(mpMap);
 
     // Add loop edge
-    mpMatchedKF->AddLoopEdge(mpCurrentKF);
-    mpCurrentKF->AddLoopEdge(mpMatchedKF);
+    KeyFrame_AddLoopEdge(mpMatchedKF,mpCurrentKF);
+    KeyFrame_AddLoopEdge(mpMatchedKF,mpMatchedKF);
 
     // Launch a new thread to perform Global Bundle Adjustment
     mbRunningGBA = true;
@@ -694,14 +693,14 @@ void LoopClosing::RunGlobalBundleAdjustment(unsigned long nLoopKF)
             while(!lpKFtoCheck.empty())
             {
                 KeyFrame* pKF = lpKFtoCheck.front();
-                const set<KeyFrame*> sChilds = pKF->GetChilds();
-                cv::Mat Twc = pKF->GetPoseInverse();
+                const set<KeyFrame*> sChilds = KeyFrame_GetChilds(pKF);
+                cv::Mat Twc = KeyFrame_GetPoseInverse(pKF);
                 for(set<KeyFrame*>::const_iterator sit=sChilds.begin();sit!=sChilds.end();sit++)
                 {
                     KeyFrame* pChild = *sit;
                     if(pChild->mnBAGlobalForKF!=nLoopKF)
                     {
-                        cv::Mat Tchildc = pChild->GetPose()*Twc;
+                        cv::Mat Tchildc = KeyFrame_GetPose(pChild)*Twc;
                         pChild->mTcwGBA = Tchildc*pKF->mTcwGBA;//*Tcorc*pKF->mTcwGBA;
                         pChild->mnBAGlobalForKF=nLoopKF;
 
@@ -709,8 +708,8 @@ void LoopClosing::RunGlobalBundleAdjustment(unsigned long nLoopKF)
                     lpKFtoCheck.push_back(pChild);
                 }
 
-                pKF->mTcwBefGBA = pKF->GetPose();
-                pKF->SetPose(pKF->mTcwGBA);
+                pKF->mTcwBefGBA = KeyFrame_GetPose(pKF);
+                KeyFrame_SetPose(pKF,pKF->mTcwGBA);
                 lpKFtoCheck.pop_front();
             }
 
@@ -743,7 +742,7 @@ void LoopClosing::RunGlobalBundleAdjustment(unsigned long nLoopKF)
                     cv::Mat Xc = Rcw*pMP->GetWorldPos()+tcw;
 
                     // Backproject using corrected camera
-                    cv::Mat Twc = pRefKF->GetPoseInverse();
+                    cv::Mat Twc = KeyFrame_GetPoseInverse(pRefKF);
                     cv::Mat Rwc = Twc.rowRange(0,3).colRange(0,3);
                     cv::Mat twc = Twc.rowRange(0,3).col(3);
 

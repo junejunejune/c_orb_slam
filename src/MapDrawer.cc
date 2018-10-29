@@ -94,7 +94,7 @@ void MapDrawer_DrawKeyFrames(MapDrawer* pMD, const bool bDrawKF, const bool bDra
         for(size_t i=0; i<vpKFs.size(); i++)
         {
             KeyFrame* pKF = vpKFs[i];
-            cv::Mat Twc = pKF->GetPoseInverse().t();
+            cv::Mat Twc = KeyFrame_GetPoseInverse(pKF).t();
 
             glPushMatrix();
 
@@ -138,36 +138,36 @@ void MapDrawer_DrawKeyFrames(MapDrawer* pMD, const bool bDrawKF, const bool bDra
         for(size_t i=0; i<vpKFs.size(); i++)
         {
             // Covisibility Graph
-            const vector<KeyFrame*> vCovKFs = vpKFs[i]->GetCovisiblesByWeight(100);
-            cv::Mat Ow = vpKFs[i]->GetCameraCenter();
+            const vector<KeyFrame*> vCovKFs = KeyFrame_GetCovisiblesByWeight(vpKFs[i], 100);
+            cv::Mat Ow = KeyFrame_GetCameraCenter(vpKFs[i]);
             if(!vCovKFs.empty())
             {
                 for(vector<KeyFrame*>::const_iterator vit=vCovKFs.begin(), vend=vCovKFs.end(); vit!=vend; vit++)
                 {
                     if((*vit)->mnId<vpKFs[i]->mnId)
                         continue;
-                    cv::Mat Ow2 = (*vit)->GetCameraCenter();
+                    cv::Mat Ow2 = KeyFrame_GetCameraCenter((*vit));
                     glVertex3f(Ow.at<float>(0),Ow.at<float>(1),Ow.at<float>(2));
                     glVertex3f(Ow2.at<float>(0),Ow2.at<float>(1),Ow2.at<float>(2));
                 }
             }
 
             // Spanning tree
-            KeyFrame* pParent = vpKFs[i]->GetParent();
+            KeyFrame* pParent = KeyFrame_GetParent(vpKFs[i]);
             if(pParent)
             {
-                cv::Mat Owp = pParent->GetCameraCenter();
+                cv::Mat Owp = KeyFrame_GetCameraCenter(pParent);
                 glVertex3f(Ow.at<float>(0),Ow.at<float>(1),Ow.at<float>(2));
                 glVertex3f(Owp.at<float>(0),Owp.at<float>(1),Owp.at<float>(2));
             }
 
             // Loops
-            set<KeyFrame*> sLoopKFs = vpKFs[i]->GetLoopEdges();
+            set<KeyFrame*> sLoopKFs = KeyFrame_GetLoopEdges(vpKFs[i]);
             for(set<KeyFrame*>::iterator sit=sLoopKFs.begin(), send=sLoopKFs.end(); sit!=send; sit++)
             {
                 if((*sit)->mnId<vpKFs[i]->mnId)
                     continue;
-                cv::Mat Owl = (*sit)->GetCameraCenter();
+                cv::Mat Owl = KeyFrame_GetCameraCenter((*sit));
                 glVertex3f(Ow.at<float>(0),Ow.at<float>(1),Ow.at<float>(2));
                 glVertex3f(Owl.at<float>(0),Owl.at<float>(1),Owl.at<float>(2));
             }

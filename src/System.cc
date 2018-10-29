@@ -19,7 +19,6 @@
 */
 
 
-
 #include "System.h"
 #include "Converter.h"
 #include <thread>
@@ -347,11 +346,11 @@ void System::SaveTrajectoryTUM(const string &filename)
     }
 
     vector<KeyFrame*> vpKFs = Map_GetAllKeyFrames(mpMap);
-    sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
+    sort(vpKFs.begin(),vpKFs.end(),KeyFrame_lId);
 
     // Transform all keyframes so that the first keyframe is at the origin.
     // After a loop closure the first keyframe might not be at the origin.
-    cv::Mat Two = vpKFs[0]->GetPoseInverse();
+    cv::Mat Two = KeyFrame_GetPoseInverse(vpKFs[0]);
 
     ofstream f;
     f.open(filename.c_str());
@@ -377,13 +376,13 @@ void System::SaveTrajectoryTUM(const string &filename)
         cv::Mat Trw = cv::Mat::eye(4,4,CV_32F);
 
         // If the reference keyframe was culled, traverse the spanning tree to get a suitable keyframe.
-        while(pKF->isBad())
+        while(KeyFrame_isBad(pKF))
         {
             Trw = Trw*pKF->mTcp;
-            pKF = pKF->GetParent();
+            pKF = KeyFrame_GetParent(pKF);
         }
 
-        Trw = Trw*pKF->GetPose()*Two;
+        Trw = Trw*KeyFrame_GetPose(pKF)*Two;
 
         cv::Mat Tcw = (*lit)*Trw;
         cv::Mat Rwc = Tcw.rowRange(0,3).colRange(0,3).t();
@@ -403,7 +402,7 @@ void System::SaveKeyFrameTrajectoryTUM(const string &filename)
     cout << endl << "Saving keyframe trajectory to " << filename << " ..." << endl;
 
     vector<KeyFrame*> vpKFs = Map_GetAllKeyFrames(mpMap);
-    sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
+    sort(vpKFs.begin(),vpKFs.end(),KeyFrame_lId);
 
     // Transform all keyframes so that the first keyframe is at the origin.
     // After a loop closure the first keyframe might not be at the origin.
@@ -419,12 +418,12 @@ void System::SaveKeyFrameTrajectoryTUM(const string &filename)
 
        // pKF->SetPose(pKF->GetPose()*Two);
 
-        if(pKF->isBad())
+        if(KeyFrame_isBad(pKF))
             continue;
 
-        cv::Mat R = pKF->GetRotation().t();
+        cv::Mat R = KeyFrame_GetRotation(pKF).t();
         vector<float> q = Converter_toQuaternion(R);
-        cv::Mat t = pKF->GetCameraCenter();
+        cv::Mat t = KeyFrame_GetCameraCenter(pKF);
         f << setprecision(6) << pKF->mTimeStamp << setprecision(7) << " " << t.at<float>(0) << " " << t.at<float>(1) << " " << t.at<float>(2)
           << " " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << endl;
 
@@ -444,11 +443,11 @@ void System::SaveTrajectoryKITTI(const string &filename)
     }
 
     vector<KeyFrame*> vpKFs = Map_GetAllKeyFrames(mpMap);
-    sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
+    sort(vpKFs.begin(),vpKFs.end(),KeyFrame_lId);
 
     // Transform all keyframes so that the first keyframe is at the origin.
     // After a loop closure the first keyframe might not be at the origin.
-    cv::Mat Two = vpKFs[0]->GetPoseInverse();
+    cv::Mat Two = KeyFrame_GetPoseInverse(vpKFs[0]);
 
     ofstream f;
     f.open(filename.c_str());
@@ -468,14 +467,14 @@ void System::SaveTrajectoryKITTI(const string &filename)
 
         cv::Mat Trw = cv::Mat::eye(4,4,CV_32F);
 
-        while(pKF->isBad())
+        while(KeyFrame_isBad(pKF))
         {
           //  cout << "bad parent" << endl;
             Trw = Trw*pKF->mTcp;
-            pKF = pKF->GetParent();
+            pKF = KeyFrame_GetParent(pKF);
         }
 
-        Trw = Trw*pKF->GetPose()*Two;
+        Trw = Trw*KeyFrame_GetPose(pKF)*Two;
 
         cv::Mat Tcw = (*lit)*Trw;
         cv::Mat Rwc = Tcw.rowRange(0,3).colRange(0,3).t();
