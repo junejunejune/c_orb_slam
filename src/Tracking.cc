@@ -582,10 +582,9 @@ void Tracking::MonocularInitialization()
             if(mpInitializer)
                 delete mpInitializer;
 
-            mpInitializer =  new Initializer(mCurrentFrame,1.0,200);
-            //struct Initializer sInitializer;
-            //Initializer *mpInitializer = &sInitializer;
-            //Initializer_init(mpInitializer, mCurrentFrame,1.0,200);
+           // mpInitializer =  new Initializer(mCurrentFrame,1.0,200);
+            mpInitializer= new Initializer;
+            Initializer_init(mpInitializer, mCurrentFrame,1.0,200);
 
             fill(mvIniMatches.begin(),mvIniMatches.end(),-1);
 
@@ -623,7 +622,7 @@ void Tracking::MonocularInitialization()
         cv::Mat tcw; // Current Camera Translation
         vector<bool> vbTriangulated; // Triangulated Correspondences (mvIniMatches)
 
-        if(mpInitializer->Initialize(mCurrentFrame, mvIniMatches, Rcw, tcw, mvIniP3D, vbTriangulated))
+        if(Initializer_Initialize(mpInitializer,mCurrentFrame, mvIniMatches, Rcw, tcw, mvIniP3D, vbTriangulated))
         {
             for(size_t i=0, iend=mvIniMatches.size(); i<iend;i++)
             {
