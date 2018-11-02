@@ -112,7 +112,7 @@ bool LoopClosing::DetectLoop()
     //If the map contains less than 10 KF or less than 10 KF have passed from last loop detection
     if(mpCurrentKF->mnId<mLastLoopKFid+10)
     {
-        KeyFrameDatabase_add(mpKeyFrameDB,mpCurrentKF);
+        mpKeyFrameDB->add(mpCurrentKF);
         KeyFrame_SetErase(mpCurrentKF);
         return false;
     }
@@ -137,12 +137,12 @@ bool LoopClosing::DetectLoop()
     }
 
     // Query the database imposing the minimum score
-    vector<KeyFrame*> vpCandidateKFs = KeyFrameDatabase_DetectLoopCandidates(mpKeyFrameDB,mpCurrentKF, minScore);
+    vector<KeyFrame*> vpCandidateKFs = mpKeyFrameDB->DetectLoopCandidates(mpCurrentKF, minScore);
 
     // If there are no loop candidates, just add new keyframe and return false
     if(vpCandidateKFs.empty())
     {
-        KeyFrameDatabase_add(mpKeyFrameDB,mpCurrentKF);
+        mpKeyFrameDB->add(mpCurrentKF);
         mvConsistentGroups.clear();
         KeyFrame_SetErase(mpCurrentKF);
         return false;
@@ -211,7 +211,7 @@ bool LoopClosing::DetectLoop()
 
 
     // Add Current Keyframe to database
-    KeyFrameDatabase_add(mpKeyFrameDB,mpCurrentKF);
+    mpKeyFrameDB->add(mpCurrentKF);
 
     if(mvpEnoughConsistentCandidates.empty())
     {

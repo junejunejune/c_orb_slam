@@ -557,7 +557,7 @@ void KeyFrame_SetBadFlag(KeyFrame* pKeyFrame)
 
 
     Map_EraseKeyFrame(pKeyFrame->mpMap,pKeyFrame);
-    KeyFrameDatabase_erase(pKeyFrame->mpKeyFrameDB, pKeyFrame);
+    pKeyFrame->mpKeyFrameDB->erase(pKeyFrame);
 }
 
 bool KeyFrame_isBad(KeyFrame* pKeyFrame)
