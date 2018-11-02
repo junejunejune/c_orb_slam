@@ -107,9 +107,10 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
       //  struct Viewer sViewer;
       //  Viewer *mpViewer = &sViewer;
       //  Viewer_init(mpViewer,this, mpFrameDrawer,mpMapDrawer,mpTracker,strSettingsFile);
-        mpViewer = new Viewer(this, mpFrameDrawer,mpMapDrawer,mpTracker,strSettingsFile);
+        mpViewer = new Viewer;
+        Viewer_init(mpViewer,this, mpFrameDrawer,mpMapDrawer,mpTracker,strSettingsFile);
       //  mptViewer = new thread(&Viewer_Run, mpViewer);
-        mptViewer = new thread(&Viewer::Run, mpViewer);
+        mptViewer = new thread(&Viewer_Run, mpViewer);
         mpTracker->SetViewer(mpViewer);
     }
 
@@ -317,8 +318,8 @@ void System::Shutdown()
     {
      // Viewer_RequestFinish(mpViewer);
      //   while(!Viewer_isFinished(mpViewer))
-      mpViewer->RequestFinish();
-      while(!mpViewer->isFinished())
+      Viewer_RequestFinish(mpViewer);
+      while(!Viewer_isFinished(mpViewer))
         usleep(5000);
     }
 

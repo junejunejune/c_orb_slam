@@ -37,29 +37,8 @@ class FrameDrawer;
 class MapDrawer;
 class System;
 
-class Viewer
+struct Viewer
 {
-public:
-    Viewer(System* pSystem, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Tracking *pTracking, const string &strSettingPath);
-
-    // Main thread function. Draw points, keyframes, the current camera pose and the last processed
-    // frame. Drawing is refreshed according to the camera fps. We use Pangolin.
-    void Run();
-
-    void RequestFinish();
-
-    void RequestStop();
-
-    bool isFinished();
-
-    bool isStopped();
-
-    void Release();
-
-private:
-
-    bool Stop();
-
     System* mpSystem;
     FrameDrawer* mpFrameDrawer;
     MapDrawer* mpMapDrawer;
@@ -71,8 +50,6 @@ private:
 
     float mViewpointX, mViewpointY, mViewpointZ, mViewpointF;
 
-    bool CheckFinish();
-    void SetFinish();
     bool mbFinishRequested;
     bool mbFinished;
     std::mutex mMutexFinish;
@@ -82,7 +59,28 @@ private:
     std::mutex mMutexStop;
 
 };
+    void Viewer_init(Viewer* pViewer, System* pSystem, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Tracking *pTracking, const string &strSettingPath);
 
+    // Main thread function. Draw points, keyframes, the current camera pose and the last processed
+    // frame. Drawing is refreshed according to the camera fps. We use Pangolin.
+    void Viewer_Run(Viewer* pViewer);
+
+    void Viewer_RequestFinish(Viewer* pViewer);
+
+    void Viewer_RequestStop(Viewer* pViewer);
+
+    bool Viewer_isFinished(Viewer* pViewer);
+
+    bool Viewer_isStopped(Viewer* pViewer);
+
+    void Viewer_Release(Viewer* pViewer);
+
+    bool Viewer_Stop(Viewer* pViewer);
+
+    bool Viewer_CheckFinish(Viewer* pViewer);
+
+    void Viewer_SetFinish(Viewer* pViewer);
+ 
 }
 
 
