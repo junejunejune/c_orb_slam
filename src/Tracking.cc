@@ -476,7 +476,7 @@ void Tracking::Track()
             if(Map_KeyFramesInMap(mpMap)<=5)
             {
                 cout << "Track lost soon after initialisation, reseting..." << endl;
-                mpSystem->Reset();
+                System_Reset(mpSystem);
                 return;
             }
         }

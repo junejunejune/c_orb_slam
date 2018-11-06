@@ -122,12 +122,12 @@ void Viewer_Run(Viewer* pViewer)
 
         if(menuLocalizationMode && !bLocalizationMode)
         {
-            pViewer->mpSystem->ActivateLocalizationMode();
+            System_ActivateLocalizationMode(pViewer->mpSystem);
             bLocalizationMode = true;
         }
         else if(!menuLocalizationMode && bLocalizationMode)
         {
-            pViewer->mpSystem->DeactivateLocalizationMode();
+            System_DeactivateLocalizationMode(pViewer->mpSystem);
             bLocalizationMode = false;
         }
 
@@ -152,11 +152,11 @@ void Viewer_Run(Viewer* pViewer)
             menuShowPoints = true;
             menuLocalizationMode = false;
             if(bLocalizationMode)
-                pViewer->mpSystem->DeactivateLocalizationMode();
+                System_DeactivateLocalizationMode(pViewer->mpSystem);
             bLocalizationMode = false;
             bFollow = true;
             menuFollowCamera = true;
-            pViewer->mpSystem->Reset();
+            System_Reset(pViewer->mpSystem);
             menuReset = false;
         }
 
