@@ -50,32 +50,9 @@ class LocalMapping;
 class LoopClosing;
 class System;
 
-class Tracking
+struct Tracking
 {  
 
-public:
-    Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Map* pMap,
-             KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor);
-
-    // Preprocess the input and call Track(). Extract features and performs stereo matching.
-    cv::Mat GrabImageStereo(const cv::Mat &imRectLeft,const cv::Mat &imRectRight, const double &timestamp);
-    cv::Mat GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const double &timestamp);
-    cv::Mat GrabImageMonocular(const cv::Mat &im, const double &timestamp);
-
-    void SetLocalMapper(LocalMapping* pLocalMapper);
-    void SetLoopClosing(LoopClosing* pLoopClosing);
-    void SetViewer(Viewer* pViewer);
-
-    // Load new settings
-    // The focal lenght should be similar or scale prediction will fail when projecting points
-    // TODO: Modify MapPoint::PredictScale to take into account focal lenght
-    void ChangeCalibration(const string &strSettingPath);
-
-    // Use this function if you have deactivated local mapping and you only want to localize the camera.
-    void InformOnlyTracking(const bool &flag);
-
-
-public:
 
     // Tracking states
     enum eTrackingState{
@@ -112,37 +89,6 @@ public:
 
     // True if local mapping is deactivated and we are performing only localization
     bool mbOnlyTracking;
-
-    void Reset();
-
-protected:
-
-    // Main tracking function. It is independent of the input sensor.
-    void Track();
-
-    // Map initialization for stereo and RGB-D
-    void StereoInitialization();
-
-    // Map initialization for monocular
-    void MonocularInitialization();
-    void CreateInitialMapMonocular();
-
-    void CheckReplacedInLastFrame();
-    bool TrackReferenceKeyFrame();
-    void UpdateLastFrame();
-    bool TrackWithMotionModel();
-
-    bool Relocalization();
-
-    void UpdateLocalMap();
-    void UpdateLocalPoints();
-    void UpdateLocalKeyFrames();
-
-    bool TrackLocalMap();
-    void SearchLocalPoints();
-
-    bool NeedNewKeyFrame();
-    void CreateNewKeyFrame();
 
     // In case of performing only localization, this flag is true when there are no matches to
     // points in the map. Still tracking will continue if there are enough matches with temporal points.
@@ -215,6 +161,55 @@ protected:
 
     list<MapPoint*> mlpTemporalPoints;
 };
+    void Tracking_init(Tracking* pTr, System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Map* pMap,
+             KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor);
+
+    // Preprocess the input and call Track(). Extract features and performs stereo matching.
+    cv::Mat Tracking_GrabImageStereo(Tracking* pTr,const cv::Mat &imRectLeft,const cv::Mat &imRectRight, const double &timestamp);
+    cv::Mat Tracking_GrabImageRGBD(Tracking* pTr,const cv::Mat &imRGB,const cv::Mat &imD, const double &timestamp);
+    cv::Mat Tracking_GrabImageMonocular(Tracking* pTr,const cv::Mat &im, const double &timestamp);
+
+    void Tracking_SetLocalMapper(Tracking* pTr,LocalMapping* pLocalMapper);
+    void Tracking_SetLoopClosing(Tracking* pTr,LoopClosing* pLoopClosing);
+    void Tracking_SetViewer(Tracking* pTr,Viewer* pViewer);
+
+    // Load new settings
+    // The focal lenght should be similar or scale prediction will fail when projecting points
+    // TODO: Modify MapPoint::PredictScale to take into account focal lenght
+    void Tracking_ChangeCalibration(Tracking* pTr,const string &strSettingPath);
+
+    // Use this function if you have deactivated local mapping and you only want to localize the camera.
+    void Tracking_InformOnlyTracking(Tracking* pTr,const bool &flag);
+
+    void Tracking_Reset(Tracking* pTr);
+
+    // Main tracking function. It is independent of the input sensor.
+    void Tracking_Track(Tracking* pTr);
+
+    // Map initialization for stereo and RGB-D
+    void Tracking_StereoInitialization(Tracking* pTr);
+
+    // Map initialization for monocular
+    void Tracking_MonocularInitialization(Tracking* pTr);
+    void Tracking_CreateInitialMapMonocular(Tracking* pTr);
+
+    void Tracking_CheckReplacedInLastFrame(Tracking* pTr);
+    bool Tracking_TrackReferenceKeyFrame(Tracking* pTr);
+    void Tracking_UpdateLastFrame(Tracking* pTr);
+    bool Tracking_TrackWithMotionModel(Tracking* pTr);
+
+    bool Tracking_Relocalization(Tracking* pTr);
+
+    void Tracking_UpdateLocalMap(Tracking* pTr);
+    void Tracking_UpdateLocalPoints(Tracking* pTr);
+    void Tracking_UpdateLocalKeyFrames(Tracking* pTr);
+
+    bool Tracking_TrackLocalMap(Tracking* pTr);
+    void Tracking_SearchLocalPoints(Tracking* pTr);
+
+    bool Tracking_NeedNewKeyFrame(Tracking* pTr);
+    void Tracking_CreateNewKeyFrame(Tracking* pTr);
+
 
 } //namespace ORB_SLAM
 

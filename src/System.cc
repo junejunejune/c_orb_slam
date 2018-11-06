@@ -96,7 +96,8 @@ void System_init(System *pSystem, const string &strVocFile, const string &strSet
 
     //Initialize the Tracking thread
     //(it will live in the main thread of execution, the one that called this constructor)
-    pSystem->mpTracker = new Tracking(pSystem, pSystem->mpVocabulary, pSystem->mpFrameDrawer, pSystem->mpMapDrawer,
+    pSystem->mpTracker = new Tracking();
+    Tracking_init(pSystem->mpTracker,pSystem, pSystem->mpVocabulary, pSystem->mpFrameDrawer, pSystem->mpMapDrawer,
                              pSystem->mpMap, pSystem->mpKeyFrameDatabase, strSettingsFile, pSystem->mSensor);
 
     //Initialize the Local Mapping thread and launch
@@ -117,12 +118,12 @@ void System_init(System *pSystem, const string &strVocFile, const string &strSet
         Viewer_init(pSystem->mpViewer,pSystem, pSystem->mpFrameDrawer,pSystem->mpMapDrawer,pSystem->mpTracker,strSettingsFile);
       //  mptViewer = new thread(&Viewer_Run, mpViewer);
         pSystem->mptViewer = new thread(&Viewer_Run, pSystem->mpViewer);
-        pSystem->mpTracker->SetViewer(pSystem->mpViewer);
+        Tracking_SetViewer(pSystem->mpTracker,pSystem->mpViewer);
     }
 
    //Set pointers between threads
-    pSystem->mpTracker->SetLocalMapper(pSystem->mpLocalMapper);
-    pSystem->mpTracker->SetLoopClosing(pSystem->mpLoopCloser);
+    Tracking_SetLocalMapper(pSystem->mpTracker,pSystem->mpLocalMapper);
+    Tracking_SetLoopClosing(pSystem->mpTracker,pSystem->mpLoopCloser);
 
     pSystem->mpLocalMapper->SetTracker(pSystem->mpTracker);
     pSystem->mpLocalMapper->SetLoopCloser(pSystem->mpLoopCloser);
@@ -152,12 +153,12 @@ cv::Mat System_TrackStereo(System *pSystem,const cv::Mat &imLeft, const cv::Mat 
                 usleep(1000);
             }
 
-            pSystem->mpTracker->InformOnlyTracking(true);
+            Tracking_InformOnlyTracking(pSystem->mpTracker, true);
             pSystem->mbActivateLocalizationMode = false;
         }
         if(pSystem->mbDeactivateLocalizationMode)
         {
-            pSystem->mpTracker->InformOnlyTracking(false);
+            Tracking_InformOnlyTracking(pSystem->mpTracker,false);
             pSystem->mpLocalMapper->Release();
             pSystem->mbDeactivateLocalizationMode = false;
         }
@@ -168,12 +169,12 @@ cv::Mat System_TrackStereo(System *pSystem,const cv::Mat &imLeft, const cv::Mat 
     unique_lock<mutex> lock(pSystem->mMutexReset);
     if(pSystem->mbReset)
     {
-        pSystem->mpTracker->Reset();
+        Tracking_Reset(pSystem->mpTracker);
         pSystem->mbReset = false;
     }
     }
 
-    cv::Mat Tcw = pSystem->mpTracker->GrabImageStereo(imLeft,imRight,timestamp);
+    cv::Mat Tcw = Tracking_GrabImageStereo(pSystem->mpTracker,imLeft,imRight,timestamp);
 
     unique_lock<mutex> lock2(pSystem->mMutexState);
     pSystem->mTrackingState = pSystem->mpTracker->mState;
@@ -203,12 +204,12 @@ cv::Mat System_TrackRGBD(System *pSystem,const cv::Mat &im, const cv::Mat &depth
                 usleep(1000);
             }
 
-            pSystem->mpTracker->InformOnlyTracking(true);
+            Tracking_InformOnlyTracking(pSystem->mpTracker,true);
             pSystem->mbActivateLocalizationMode = false;
         }
         if(pSystem->mbDeactivateLocalizationMode)
         {
-            pSystem->mpTracker->InformOnlyTracking(false);
+            Tracking_InformOnlyTracking(pSystem->mpTracker,false);
             pSystem->mpLocalMapper->Release();
             pSystem->mbDeactivateLocalizationMode = false;
         }
@@ -219,12 +220,12 @@ cv::Mat System_TrackRGBD(System *pSystem,const cv::Mat &im, const cv::Mat &depth
     unique_lock<mutex> lock(pSystem->mMutexReset);
     if(pSystem->mbReset)
     {
-        pSystem->mpTracker->Reset();
+        Tracking_Reset(pSystem->mpTracker);
         pSystem->mbReset = false;
     }
     }
 
-    cv::Mat Tcw = pSystem->mpTracker->GrabImageRGBD(im,depthmap,timestamp);
+    cv::Mat Tcw = Tracking_GrabImageRGBD(pSystem->mpTracker,im,depthmap,timestamp);
 
     unique_lock<mutex> lock2(pSystem->mMutexState);
     pSystem->mTrackingState = pSystem->mpTracker->mState;
@@ -254,12 +255,12 @@ cv::Mat System_TrackMonocular(System *pSystem,const cv::Mat &im, const double &t
                 usleep(1000);
             }
 
-            pSystem->mpTracker->InformOnlyTracking(true);
+            Tracking_InformOnlyTracking(pSystem->mpTracker,true);
             pSystem->mbActivateLocalizationMode = false;
         }
         if(pSystem->mbDeactivateLocalizationMode)
         {
-            pSystem->mpTracker->InformOnlyTracking(false);
+            Tracking_InformOnlyTracking(pSystem->mpTracker,false);
             pSystem->mpLocalMapper->Release();
             pSystem->mbDeactivateLocalizationMode = false;
         }
@@ -270,12 +271,12 @@ cv::Mat System_TrackMonocular(System *pSystem,const cv::Mat &im, const double &t
     unique_lock<mutex> lock(pSystem->mMutexReset);
     if(pSystem->mbReset)
     {
-        pSystem->mpTracker->Reset();
+        Tracking_Reset(pSystem->mpTracker);
         pSystem->mbReset = false;
     }
     }
 
-    cv::Mat Tcw = pSystem->mpTracker->GrabImageMonocular(im,timestamp);
+    cv::Mat Tcw = Tracking_GrabImageMonocular(pSystem->mpTracker,im,timestamp);
 
     unique_lock<mutex> lock2(pSystem->mMutexState);
     pSystem->mTrackingState = pSystem->mpTracker->mState;
