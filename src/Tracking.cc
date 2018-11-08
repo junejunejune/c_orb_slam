@@ -557,7 +557,7 @@ void Tracking_StereoInitialization(Tracking* pTr)
 
         cout << "New map created with " << Map_MapPointsInMap(pTr->mpMap) << " points" << endl;
 
-        pTr->mpLocalMapper->InsertKeyFrame(pKFini);
+        LocalMapping_InsertKeyFrame(pTr->mpLocalMapper,pKFini);
 
         pTr->mLastFrame = Frame(pTr->mCurrentFrame);
         pTr->mnLastKeyFrameId=pTr->mCurrentFrame.mnId;
@@ -752,8 +752,8 @@ void Tracking_CreateInitialMapMonocular(Tracking* pTr)
         }
     }
 
-    pTr->mpLocalMapper->InsertKeyFrame(pKFini);
-    pTr->mpLocalMapper->InsertKeyFrame(pKFcur);
+    LocalMapping_InsertKeyFrame(pTr->mpLocalMapper,pKFini);
+    LocalMapping_InsertKeyFrame(pTr->mpLocalMapper,pKFcur);
 
     pTr->mCurrentFrame.SetPose(KeyFrame_GetPose(pKFcur));
     pTr->mnLastKeyFrameId=pTr->mCurrentFrame.mnId;
@@ -1029,7 +1029,7 @@ bool Tracking_NeedNewKeyFrame(Tracking* pTr)
         return false;
 
     // If Local Mapping is freezed by a Loop Closure do not insert keyframes
-    if(pTr->mpLocalMapper->isStopped() || pTr->mpLocalMapper->stopRequested())
+    if(LocalMapping_isStopped(pTr->mpLocalMapper) || LocalMapping_stopRequested(pTr->mpLocalMapper))
         return false;
 
     const int nKFs = Map_KeyFramesInMap(pTr->mpMap);
@@ -1045,7 +1045,7 @@ bool Tracking_NeedNewKeyFrame(Tracking* pTr)
     int nRefMatches = KeyFrame_TrackedMapPoints(pTr->mpReferenceKF, nMinObs);
 
     // Local Mapping accept keyframes?
-    bool bLocalMappingIdle = pTr->mpLocalMapper->AcceptKeyFrames();
+    bool bLocalMappingIdle =LocalMapping_AcceptKeyFrames( pTr->mpLocalMapper);
 
     // Check how many "close" points are being tracked and how many could be potentially created.
     int nNonTrackedClose = 0;
@@ -1093,10 +1093,10 @@ bool Tracking_NeedNewKeyFrame(Tracking* pTr)
         }
         else
         {
-            pTr->mpLocalMapper->InterruptBA();
+            LocalMapping_InterruptBA(pTr->mpLocalMapper);
             if(pTr->mSensor!=System::MONOCULAR)
             {
-                if(pTr->mpLocalMapper->KeyframesInQueue()<3)
+                if(LocalMapping_KeyframesInQueue(pTr->mpLocalMapper)<3)
                     return true;
                 else
                     return false;
@@ -1111,7 +1111,7 @@ bool Tracking_NeedNewKeyFrame(Tracking* pTr)
 
 void Tracking_CreateNewKeyFrame(Tracking* pTr)
 {
-    if(!pTr->mpLocalMapper->SetNotStop(true))
+    if(!LocalMapping_SetNotStop(pTr->mpLocalMapper,true))
         return;
 
  //   KeyFrame* pKF = new KeyFrame(mCurrentFrame,mpMap,mpKeyFrameDB);
@@ -1185,9 +1185,9 @@ void Tracking_CreateNewKeyFrame(Tracking* pTr)
         }
     }
 
-    pTr->mpLocalMapper->InsertKeyFrame(pKF);
+    LocalMapping_InsertKeyFrame(pTr->mpLocalMapper,pKF);
 
-    pTr->mpLocalMapper->SetNotStop(false);
+    LocalMapping_SetNotStop(pTr->mpLocalMapper,false);
 
     pTr->mnLastKeyFrameId = pTr->mCurrentFrame.mnId;
     pTr->mpLastKeyFrame = pKF;
@@ -1581,7 +1581,7 @@ void Tracking_Reset(Tracking* pTr)
 
     // Reset Local Mapping
     cout << "Reseting Local Mapper...";
-    pTr->mpLocalMapper->RequestReset();
+    LocalMapping_RequestReset(pTr->mpLocalMapper);
     cout << " done" << endl;
 
     // Reset Loop Closing

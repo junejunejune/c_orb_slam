@@ -37,65 +37,14 @@ class Tracking;
 class LoopClosing;
 class Map;
 
-class LocalMapping
+struct LocalMapping
 {
-public:
-    LocalMapping(Map* pMap, const float bMonocular);
-
-    void SetLoopCloser(LoopClosing* pLoopCloser);
-
-    void SetTracker(Tracking* pTracker);
-
-    // Main function
-    void Run();
-
-    void InsertKeyFrame(KeyFrame* pKF);
-
-    // Thread Synch
-    void RequestStop();
-    void RequestReset();
-    bool Stop();
-    void Release();
-    bool isStopped();
-    bool stopRequested();
-    bool AcceptKeyFrames();
-    void SetAcceptKeyFrames(bool flag);
-    bool SetNotStop(bool flag);
-
-    void InterruptBA();
-
-    void RequestFinish();
-    bool isFinished();
-
-    int KeyframesInQueue(){
-        unique_lock<std::mutex> lock(mMutexNewKFs);
-        return mlNewKeyFrames.size();
-    }
-
-protected:
-
-    bool CheckNewKeyFrames();
-    void ProcessNewKeyFrame();
-    void CreateNewMapPoints();
-
-    void MapPointCulling();
-    void SearchInNeighbors();
-
-    void KeyFrameCulling();
-
-    cv::Mat ComputeF12(KeyFrame* &pKF1, KeyFrame* &pKF2);
-
-    cv::Mat SkewSymmetricMatrix(const cv::Mat &v);
-
     bool mbMonocular;
 
-    void ResetIfRequested();
     bool mbResetRequested;
     std::mutex mMutexReset;
 
-    bool CheckFinish();
-    void SetFinish();
-    bool mbFinishRequested;
+   bool mbFinishRequested;
     bool mbFinished;
     std::mutex mMutexFinish;
 
@@ -122,7 +71,52 @@ protected:
     bool mbAcceptKeyFrames;
     std::mutex mMutexAccept;
 };
+    void LocalMapping_init(LocalMapping* pLM,Map* pMap, const float bMonocular);
 
+    void LocalMapping_SetLoopCloser(LocalMapping* pLM,LoopClosing* pLoopCloser);
+
+    void LocalMapping_SetTracker(LocalMapping* pLM,Tracking* pTracker);
+
+    // Main function
+    void LocalMapping_Run(LocalMapping* pLM);
+
+    void LocalMapping_InsertKeyFrame(LocalMapping* pLM,KeyFrame* pKF);
+
+    // Thread Synch
+    void LocalMapping_RequestStop(LocalMapping* pLM);
+    void LocalMapping_RequestReset(LocalMapping* pLM);
+    bool LocalMapping_Stop(LocalMapping* pLM);
+    void LocalMapping_Release(LocalMapping* pLM);
+    bool LocalMapping_isStopped(LocalMapping* pLM);
+    bool LocalMapping_stopRequested(LocalMapping* pLM);
+    bool LocalMapping_AcceptKeyFrames(LocalMapping* pLM);
+    void LocalMapping_SetAcceptKeyFrames(LocalMapping* pLM,bool flag);
+    bool LocalMapping_SetNotStop(LocalMapping* pLM,bool flag);
+
+    void LocalMapping_InterruptBA(LocalMapping* pLM);
+
+    void LocalMapping_RequestFinish(LocalMapping* pLM);
+    bool LocalMapping_isFinished(LocalMapping* pLM);
+
+    int LocalMapping_KeyframesInQueue(LocalMapping* pLM);
+
+    bool LocalMapping_CheckNewKeyFrames(LocalMapping* pLM);
+    void LocalMapping_ProcessNewKeyFrame(LocalMapping* pLM);
+    void LocalMapping_CreateNewMapPoints(LocalMapping* pLM);
+
+    void LocalMapping_MapPointCulling(LocalMapping* pLM);
+    void LocalMapping_SearchInNeighbors(LocalMapping* pLM);
+
+    void LocalMapping_KeyFrameCulling(LocalMapping* pLM);
+
+    cv::Mat LocalMapping_ComputeF12(LocalMapping* pLM,KeyFrame* &pKF1, KeyFrame* &pKF2);
+
+    cv::Mat LocalMapping_SkewSymmetricMatrix(LocalMapping* pLM,const cv::Mat &v);
+
+    void LocalMapping_ResetIfRequested(LocalMapping* pLM);
+    bool LocalMapping_CheckFinish(LocalMapping* pLM);
+    void LocalMapping_SetFinish(LocalMapping* pLM);
+ 
 } //namespace ORB_SLAM
 
 #endif // LOCALMAPPING_H

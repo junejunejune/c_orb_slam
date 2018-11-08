@@ -101,8 +101,9 @@ void System_init(System *pSystem, const string &strVocFile, const string &strSet
                              pSystem->mpMap, pSystem->mpKeyFrameDatabase, strSettingsFile, pSystem->mSensor);
 
     //Initialize the Local Mapping thread and launch
-    pSystem->mpLocalMapper = new LocalMapping(pSystem->mpMap, pSystem->mSensor==System::MONOCULAR);
-    pSystem->mptLocalMapping = new thread(&ORB_SLAM2::LocalMapping::Run,pSystem->mpLocalMapper);
+    pSystem->mpLocalMapper = new LocalMapping();
+    LocalMapping_init(pSystem->mpLocalMapper,pSystem->mpMap, pSystem->mSensor==System::MONOCULAR);
+    pSystem->mptLocalMapping = new thread(&ORB_SLAM2::LocalMapping_Run,pSystem->mpLocalMapper);
  
     //Initialize the Loop Closing thread and launch
     pSystem->mpLoopCloser = new LoopClosing(pSystem->mpMap, pSystem->mpKeyFrameDatabase, pSystem->mpVocabulary, pSystem->mSensor!=System::MONOCULAR);
@@ -125,8 +126,8 @@ void System_init(System *pSystem, const string &strVocFile, const string &strSet
     Tracking_SetLocalMapper(pSystem->mpTracker,pSystem->mpLocalMapper);
     Tracking_SetLoopClosing(pSystem->mpTracker,pSystem->mpLoopCloser);
 
-    pSystem->mpLocalMapper->SetTracker(pSystem->mpTracker);
-    pSystem->mpLocalMapper->SetLoopCloser(pSystem->mpLoopCloser);
+    LocalMapping_SetTracker(pSystem->mpLocalMapper,pSystem->mpTracker);
+    LocalMapping_SetLoopCloser(pSystem->mpLocalMapper,pSystem->mpLoopCloser);
 
     pSystem->mpLoopCloser->SetTracker(pSystem->mpTracker);
     pSystem->mpLoopCloser->SetLocalMapper(pSystem->mpLocalMapper);
@@ -145,10 +146,10 @@ cv::Mat System_TrackStereo(System *pSystem,const cv::Mat &imLeft, const cv::Mat 
         unique_lock<mutex> lock(pSystem->mMutexMode);
         if(pSystem->mbActivateLocalizationMode)
         {
-            pSystem->mpLocalMapper->RequestStop();
+            LocalMapping_RequestStop(pSystem->mpLocalMapper);
 
             // Wait until Local Mapping has effectively stopped
-            while(!pSystem->mpLocalMapper->isStopped())
+            while(!LocalMapping_isStopped(pSystem->mpLocalMapper))
             {
                 usleep(1000);
             }
@@ -159,7 +160,7 @@ cv::Mat System_TrackStereo(System *pSystem,const cv::Mat &imLeft, const cv::Mat 
         if(pSystem->mbDeactivateLocalizationMode)
         {
             Tracking_InformOnlyTracking(pSystem->mpTracker,false);
-            pSystem->mpLocalMapper->Release();
+            LocalMapping_Release(pSystem->mpLocalMapper);
             pSystem->mbDeactivateLocalizationMode = false;
         }
     }
@@ -196,10 +197,10 @@ cv::Mat System_TrackRGBD(System *pSystem,const cv::Mat &im, const cv::Mat &depth
         unique_lock<mutex> lock(pSystem->mMutexMode);
         if(pSystem->mbActivateLocalizationMode)
         {
-            pSystem->mpLocalMapper->RequestStop();
+            LocalMapping_RequestStop(pSystem->mpLocalMapper);
 
             // Wait until Local Mapping has effectively stopped
-            while(!pSystem->mpLocalMapper->isStopped())
+            while(!LocalMapping_isStopped(pSystem->mpLocalMapper))
             {
                 usleep(1000);
             }
@@ -210,7 +211,7 @@ cv::Mat System_TrackRGBD(System *pSystem,const cv::Mat &im, const cv::Mat &depth
         if(pSystem->mbDeactivateLocalizationMode)
         {
             Tracking_InformOnlyTracking(pSystem->mpTracker,false);
-            pSystem->mpLocalMapper->Release();
+            LocalMapping_Release(pSystem->mpLocalMapper);
             pSystem->mbDeactivateLocalizationMode = false;
         }
     }
@@ -247,10 +248,10 @@ cv::Mat System_TrackMonocular(System *pSystem,const cv::Mat &im, const double &t
         unique_lock<mutex> lock(pSystem->mMutexMode);
         if(pSystem->mbActivateLocalizationMode)
         {
-            pSystem->mpLocalMapper->RequestStop();
+            LocalMapping_RequestStop(pSystem->mpLocalMapper);
 
             // Wait until Local Mapping has effectively stopped
-            while(!pSystem->mpLocalMapper->isStopped())
+            while(!LocalMapping_isStopped(pSystem->mpLocalMapper))
             {
                 usleep(1000);
             }
@@ -261,7 +262,7 @@ cv::Mat System_TrackMonocular(System *pSystem,const cv::Mat &im, const double &t
         if(pSystem->mbDeactivateLocalizationMode)
         {
             Tracking_InformOnlyTracking(pSystem->mpTracker,false);
-            pSystem->mpLocalMapper->Release();
+            LocalMapping_Release(pSystem->mpLocalMapper);
             pSystem->mbDeactivateLocalizationMode = false;
         }
     }
@@ -319,7 +320,7 @@ void System_Reset(System *pSystem)
 
 void System_Shutdown(System *pSystem)
 {
-    pSystem->mpLocalMapper->RequestFinish();
+    LocalMapping_RequestFinish(pSystem->mpLocalMapper);
     pSystem->mpLoopCloser->RequestFinish();
     if(pSystem->mpViewer)
     {
@@ -334,7 +335,7 @@ void System_Shutdown(System *pSystem)
     pSystem->mpViewer = static_cast<Viewer*>(NULL);
 
     // Wait until all thread have effectively stopped
-    while(!pSystem->mpLocalMapper->isFinished() || !pSystem->mpLoopCloser->isFinished() || pSystem->mpLoopCloser->isRunningGBA())
+    while(!LocalMapping_isFinished(pSystem->mpLocalMapper) || !pSystem->mpLoopCloser->isFinished() || pSystem->mpLoopCloser->isRunningGBA())
     {
         usleep(5000);
     }
