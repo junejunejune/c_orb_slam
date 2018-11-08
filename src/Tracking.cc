@@ -1586,7 +1586,7 @@ void Tracking_Reset(Tracking* pTr)
 
     // Reset Loop Closing
     cout << "Reseting Loop Closing...";
-    pTr->mpLoopClosing->RequestReset();
+    LoopClosing_RequestReset(pTr->mpLoopClosing);
     cout << " done" << endl;
 
     // Clear BoW Database
