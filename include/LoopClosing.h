@@ -41,17 +41,66 @@ class LocalMapping;
 class KeyFrameDatabase;
 
 
-struct LoopClosing
+class LoopClosing
 {
+public:
+
     typedef pair<set<KeyFrame*>,int> ConsistentGroup;    
     typedef map<KeyFrame*,g2o::Sim3,std::less<KeyFrame*>,
         Eigen::aligned_allocator<std::pair<const KeyFrame*, g2o::Sim3> > > KeyFrameAndPose;
 
+public:
 
-   bool mbResetRequested;
+    LoopClosing(Map* pMap, KeyFrameDatabase* pDB, ORBVocabulary* pVoc,const bool bFixScale);
+
+    void SetTracker(Tracking* pTracker);
+
+    void SetLocalMapper(LocalMapping* pLocalMapper);
+
+    // Main function
+    void Run();
+
+    void InsertKeyFrame(KeyFrame *pKF);
+
+    void RequestReset();
+
+    // This function will run in a separate thread
+    void RunGlobalBundleAdjustment(unsigned long nLoopKF);
+
+    bool isRunningGBA(){
+        unique_lock<std::mutex> lock(mMutexGBA);
+        return mbRunningGBA;
+    }
+    bool isFinishedGBA(){
+        unique_lock<std::mutex> lock(mMutexGBA);
+        return mbFinishedGBA;
+    }   
+
+    void RequestFinish();
+
+    bool isFinished();
+
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+protected:
+
+    bool CheckNewKeyFrames();
+
+    bool DetectLoop();
+
+    bool ComputeSim3();
+
+    void SearchAndFuse(const KeyFrameAndPose &CorrectedPosesMap);
+
+    void CorrectLoop();
+
+    void ResetIfRequested();
+    bool mbResetRequested;
     std::mutex mMutexReset;
 
-   bool mbFinishRequested;
+    bool CheckFinish();
+    void SetFinish();
+    bool mbFinishRequested;
     bool mbFinished;
     std::mutex mMutexFinish;
 
@@ -96,48 +145,7 @@ struct LoopClosing
 
     bool mnFullBAIdx;
 };
-    void LoopClosing_init(LoopClosing* pLC,Map* pMap, KeyFrameDatabase* pDB, ORBVocabulary* pVoc,const bool bFixScale);
 
-    void LoopClosing_SetTracker(LoopClosing* pLC,Tracking* pTracker);
-
-    void LoopClosing_SetLocalMapper(LoopClosing* pLC,LocalMapping* pLocalMapper);
-
-    // Main function
-    void LoopClosing_Run(LoopClosing* pLC);
-
-    void LoopClosing_InsertKeyFrame(LoopClosing* pLC,KeyFrame *pKF);
-
-    void LoopClosing_RequestReset(LoopClosing* pLC);
-
-    // This function will run in a separate thread
-    void LoopClosing_RunGlobalBundleAdjustment(LoopClosing* pLC,unsigned long nLoopKF);
-
-    bool LoopClosing_isRunningGBA(LoopClosing* pLC);
-
-    bool LoopClosing_isFinishedGBA(LoopClosing* pLC);
-
-    void LoopClosing_RequestFinish(LoopClosing* pLC);
-
-    bool LoopClosing_isFinished(LoopClosing* pLC);
-
-    //EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
-    bool LoopClosing_CheckNewKeyFrames(LoopClosing* pLC);
-
-    bool LoopClosing_DetectLoop(LoopClosing* pLC);
-
-    bool LoopClosing_ComputeSim3(LoopClosing* pLC);
-
-    void LoopClosing_SearchAndFuse(LoopClosing* pLC,LoopClosing::KeyFrameAndPose &CorrectedPosesMap);
-
-    void LoopClosing_CorrectLoop(LoopClosing* pLC);
-
-    void LoopClosing_ResetIfRequested(LoopClosing* pLC);
-     
-    bool LoopClosing_CheckFinish(LoopClosing* pLC);
-    
-    void LoopClosing_SetFinish(LoopClosing* pLC);
- 
 } //namespace ORB_SLAM
 
 #endif // LOOPCLOSING_H

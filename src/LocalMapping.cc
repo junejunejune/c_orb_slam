@@ -97,7 +97,7 @@ void LocalMapping_Run(LocalMapping* pLM)
                 LocalMapping_KeyFrameCulling(pLM);
             }
 
-            LoopClosing_InsertKeyFrame(pLM->mpLoopCloser,pLM->mpCurrentKeyFrame);
+            pLM->mpLoopCloser->InsertKeyFrame(pLM->mpCurrentKeyFrame);
         }
         else if(LocalMapping_Stop(pLM))
         {

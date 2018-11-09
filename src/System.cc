@@ -106,9 +106,8 @@ void System_init(System *pSystem, const string &strVocFile, const string &strSet
     pSystem->mptLocalMapping = new thread(&ORB_SLAM2::LocalMapping_Run,pSystem->mpLocalMapper);
  
     //Initialize the Loop Closing thread and launch
-    pSystem->mpLoopCloser = new LoopClosing();
-    LoopClosing_init(pSystem->mpLoopCloser,pSystem->mpMap, pSystem->mpKeyFrameDatabase, pSystem->mpVocabulary, pSystem->mSensor!=System::MONOCULAR);
-    pSystem->mptLoopClosing = new thread(&ORB_SLAM2::LoopClosing_Run, pSystem->mpLoopCloser);
+    pSystem->mpLoopCloser = new LoopClosing(pSystem->mpMap, pSystem->mpKeyFrameDatabase, pSystem->mpVocabulary, pSystem->mSensor!=System::MONOCULAR);
+    pSystem->mptLoopClosing = new thread(&ORB_SLAM2::LoopClosing::Run, pSystem->mpLoopCloser);
  
     //Initialize the Viewer thread and launch
     if(bUseViewer)
@@ -130,8 +129,8 @@ void System_init(System *pSystem, const string &strVocFile, const string &strSet
     LocalMapping_SetTracker(pSystem->mpLocalMapper,pSystem->mpTracker);
     LocalMapping_SetLoopCloser(pSystem->mpLocalMapper,pSystem->mpLoopCloser);
 
-    LoopClosing_SetTracker(pSystem->mpLoopCloser,pSystem->mpTracker);
-    LoopClosing_SetLocalMapper(pSystem->mpLoopCloser,pSystem->mpLocalMapper);
+    pSystem->mpLoopCloser->SetTracker(pSystem->mpTracker);
+    pSystem->mpLoopCloser->SetLocalMapper(pSystem->mpLocalMapper);
 }
 
 cv::Mat System_TrackStereo(System *pSystem,const cv::Mat &imLeft, const cv::Mat &imRight, const double &timestamp)
@@ -322,7 +321,7 @@ void System_Reset(System *pSystem)
 void System_Shutdown(System *pSystem)
 {
     LocalMapping_RequestFinish(pSystem->mpLocalMapper);
-    LoopClosing_RequestFinish(pSystem->mpLoopCloser);
+    pSystem->mpLoopCloser->RequestFinish();
     if(pSystem->mpViewer)
     {
      // Viewer_RequestFinish(mpViewer);
@@ -336,7 +335,7 @@ void System_Shutdown(System *pSystem)
     pSystem->mpViewer = static_cast<Viewer*>(NULL);
 
     // Wait until all thread have effectively stopped
-    while(!LocalMapping_isFinished(pSystem->mpLocalMapper) || !LoopClosing_isFinished(pSystem->mpLoopCloser) || LoopClosing_isRunningGBA(pSystem->mpLoopCloser))
+    while(!LocalMapping_isFinished(pSystem->mpLocalMapper) || !pSystem->mpLoopCloser->isFinished() || pSystem->mpLoopCloser->isRunningGBA())
     {
         usleep(5000);
     }
