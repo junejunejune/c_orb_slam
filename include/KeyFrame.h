@@ -35,10 +35,10 @@
 namespace ORB_SLAM2
 {
 
-class Map;
-class MapPoint;
+struct Map;
+struct MapPoint;
 class Frame;
-class KeyFrameDatabase;
+struct KeyFrameDatabase;
 
 struct KeyFrame
 {

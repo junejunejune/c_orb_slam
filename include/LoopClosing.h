@@ -36,9 +36,9 @@
 namespace ORB_SLAM2
 {
 
-class Tracking;
-class LocalMapping;
-class KeyFrameDatabase;
+struct Tracking;
+struct LocalMapping;
+struct KeyFrameDatabase;
 
 
 struct LoopClosing

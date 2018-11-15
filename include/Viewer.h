@@ -32,10 +32,10 @@
 namespace ORB_SLAM2
 {
 
-class Tracking;
-class FrameDrawer;
-class MapDrawer;
-class System;
+struct Tracking;
+struct FrameDrawer;
+struct MapDrawer;
+struct System;
 
 struct Viewer
 {

@@ -44,11 +44,11 @@ namespace ORB_SLAM2
 {
 
 struct Viewer;
-class FrameDrawer;
-class Map;
-class LocalMapping;
-class LoopClosing;
-class System;
+struct FrameDrawer;
+struct Map;
+struct LocalMapping;
+struct LoopClosing;
+struct System;
 
 struct Tracking
 {  

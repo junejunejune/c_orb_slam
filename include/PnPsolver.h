@@ -1,3 +1,4 @@
+
 /**
 * This file is part of ORB-SLAM2.
 * This file is a modified version of EPnP <http://cvlab.epfl.ch/EPnP/index.php>, see FreeBSD license below.
@@ -58,73 +59,8 @@
 namespace ORB_SLAM2
 {
 
-class PnPsolver {
- public:
-  PnPsolver(const Frame &F, const vector<MapPoint*> &vpMapPointMatches);
-
-  ~PnPsolver();
-
-  void SetRansacParameters(double probability = 0.99, int minInliers = 8 , int maxIterations = 300, int minSet = 4, float epsilon = 0.4,
-                           float th2 = 5.991);
-
-  cv::Mat find(vector<bool> &vbInliers, int &nInliers);
-
-  cv::Mat iterate(int nIterations, bool &bNoMore, vector<bool> &vbInliers, int &nInliers);
-
- private:
-
-  void CheckInliers();
-  bool Refine();
-
-  // Functions from the original EPnP code
-  void set_maximum_number_of_correspondences(const int n);
-  void reset_correspondences(void);
-  void add_correspondence(const double X, const double Y, const double Z,
-              const double u, const double v);
-
-  double compute_pose(double R[3][3], double T[3]);
-
-  void relative_error(double & rot_err, double & transl_err,
-              const double Rtrue[3][3], const double ttrue[3],
-              const double Rest[3][3],  const double test[3]);
-
-  void print_pose(const double R[3][3], const double t[3]);
-  double reprojection_error(const double R[3][3], const double t[3]);
-
-  void choose_control_points(void);
-  void compute_barycentric_coordinates(void);
-  void fill_M(CvMat * M, const int row, const double * alphas, const double u, const double v);
-  void compute_ccs(const double * betas, const double * ut);
-  void compute_pcs(void);
-
-  void solve_for_sign(void);
-
-  void find_betas_approx_1(const CvMat * L_6x10, const CvMat * Rho, double * betas);
-  void find_betas_approx_2(const CvMat * L_6x10, const CvMat * Rho, double * betas);
-  void find_betas_approx_3(const CvMat * L_6x10, const CvMat * Rho, double * betas);
-  void qr_solve(CvMat * A, CvMat * b, CvMat * X);
-
-  double dot(const double * v1, const double * v2);
-  double dist2(const double * p1, const double * p2);
-
-  void compute_rho(double * rho);
-  void compute_L_6x10(const double * ut, double * l_6x10);
-
-  void gauss_newton(const CvMat * L_6x10, const CvMat * Rho, double current_betas[4]);
-  void compute_A_and_b_gauss_newton(const double * l_6x10, const double * rho,
-				    double cb[4], CvMat * A, CvMat * b);
-
-  double compute_R_and_t(const double * ut, const double * betas,
-			 double R[3][3], double t[3]);
-
-  void estimate_R_and_t(double R[3][3], double t[3]);
-
-  void copy_R_and_t(const double R_dst[3][3], const double t_dst[3],
-		    double R_src[3][3], double t_src[3]);
-
-  void mat_to_quat(const double R[3][3], double q[4]);
-
-
+struct PnPsolver
+{
   double uc, vc, fu, fv;
 
   double * pws, * us, * alphas, * pcs;
@@ -192,6 +128,66 @@ class PnPsolver {
   vector<float> mvMaxError;
 
 };
+  void PnPsolver_init(PnPsolver *pSolver, const Frame &F, const vector<MapPoint*> &vpMapPointMatches);
+
+  void PnPsolver_SetRansacParameters(PnPsolver *pSolver, double probability = 0.99, int minInliers = 8 , int maxIterations = 300, int minSet = 4, float epsilon = 0.4,
+                           float th2 = 5.991);
+
+  cv::Mat PnPsolver_find(PnPsolver *pSolver, vector<bool> &vbInliers, int &nInliers);
+
+  cv::Mat PnPsolver_iterate(PnPsolver *pSolver, int nIterations, bool &bNoMore, vector<bool> &vbInliers, int &nInliers);
+
+  void PnPsolver_CheckInliers(PnPsolver *pSolver);
+  bool PnPsolver_Refine(PnPsolver *pSolver);
+
+  // Functions from the original EPnP code
+  void PnPsolver_set_maximum_number_of_correspondences(PnPsolver *pSolver, const int n);
+  void PnPsolver_reset_correspondences(PnPsolver *pSolver);
+  void PnPsolver_add_correspondence(PnPsolver *pSolver, const double X, const double Y, const double Z,
+              const double u, const double v);
+
+  double PnPsolver_compute_pose(PnPsolver *pSolver, double R[3][3], double T[3]);
+
+  void PnPsolver_relative_error(PnPsolver *pSolver, double & rot_err, double & transl_err,
+              const double Rtrue[3][3], const double ttrue[3],
+              const double Rest[3][3],  const double test[3]);
+
+  void PnPsolver_print_pose(PnPsolver *pSolver, const double R[3][3], const double t[3]);
+  double PnPsolver_reprojection_error(PnPsolver *pSolver, const double R[3][3], const double t[3]);
+
+  void PnPsolver_choose_control_points(PnPsolver *pSolver);
+  void PnPsolver_compute_barycentric_coordinates(PnPsolver *pSolver);
+  void PnPsolver_fill_M(PnPsolver *pSolver, CvMat * M, const int row, const double * alphas, const double u, const double v);
+  void PnPsolver_compute_ccs(PnPsolver *pSolver, const double * betas, const double * ut);
+  void PnPsolver_compute_pcs(PnPsolver *pSolver);
+
+  void PnPsolver_solve_for_sign(PnPsolver *pSolver);
+
+  void PnPsolver_find_betas_approx_1(PnPsolver *pSolver, const CvMat * L_6x10, const CvMat * Rho, double * betas);
+  void PnPsolver_find_betas_approx_2(PnPsolver *pSolver, const CvMat * L_6x10, const CvMat * Rho, double * betas);
+  void PnPsolver_find_betas_approx_3(PnPsolver *pSolver, const CvMat * L_6x10, const CvMat * Rho, double * betas);
+  void PnPsolver_qr_solve(PnPsolver *pSolver, CvMat * A, CvMat * b, CvMat * X);
+
+  double PnPsolver_dot(PnPsolver *pSolver, const double * v1, const double * v2);
+  double PnPsolver_dist2(PnPsolver *pSolver, const double * p1, const double * p2);
+
+  void PnPsolver_compute_rho(PnPsolver *pSolver, double * rho);
+  void PnPsolver_compute_L_6x10(PnPsolver *pSolver, const double * ut, double * l_6x10);
+
+  void PnPsolver_gauss_newton(PnPsolver *pSolver, const CvMat * L_6x10, const CvMat * Rho, double current_betas[4]);
+  void PnPsolver_compute_A_and_b_gauss_newton(PnPsolver *pSolver, const double * l_6x10, const double * rho,
+				    double cb[4], CvMat * A, CvMat * b);
+
+  double PnPsolver_compute_R_and_t(PnPsolver *pSolver, const double * ut, const double * betas,
+			 double R[3][3], double t[3]);
+
+  void PnPsolver_estimate_R_and_t(PnPsolver *pSolver, double R[3][3], double t[3]);
+
+  void PnPsolver_copy_R_and_t(PnPsolver *pSolver, const double R_dst[3][3], const double t_dst[3],
+		    double R_src[3][3], double t_src[3]);
+
+  void PnPsolver_mat_to_quat(PnPsolver *pSolver, const double R[3][3], double q[4]);
+
 
 } //namespace ORB_SLAM
 

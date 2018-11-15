@@ -34,8 +34,8 @@
 namespace ORB_SLAM2
 {
 
-class Tracking;
-class Viewer;
+struct Tracking;
+struct Viewer;
 
 struct FrameDrawer
 {
