@@ -617,12 +617,14 @@ void Tracking_MonocularInitialization(Tracking* pTr)
 
         // Find correspondences
         // ORBmatcher matcher(0.9,true);
-        struct ORBmatcher sORBmatcher;
-        ORBmatcher *matcher = &sORBmatcher;
-        ORBmatcher_init(matcher, 0.9, true);          
-        
-        int nmatches = ORBmatcher_SearchForInitialization(matcher, pTr->mInitialFrame,pTr->mCurrentFrame,pTr->mvbPrevMatched,pTr->mvIniMatches,100);
+       // struct ORBmatcher sORBmatcher;
+       // ORBmatcher *matcher = &sORBmatcher;
+       // ORBmatcher_init(matcher, 0.9, true);          
+        ORBmatcher* matcher = new ORBmatcher();
+        ORBmatcher_init(matcher, 0.9, true);
 
+        int nmatches = ORBmatcher_SearchForInitialization(matcher, pTr->mInitialFrame,pTr->mCurrentFrame,pTr->mvbPrevMatched,pTr->mvIniMatches,100);
+cout<<"nmatches: "<<nmatches<<endl;
         // Check if there are enough correspondences
         if(nmatches<100)
         {
@@ -802,10 +804,11 @@ bool Tracking_TrackReferenceKeyFrame(Tracking* pTr)
     // We perform first an ORB matching with the reference keyframe
     // If enough matches are found we setup a PnP solver
     //ORBmatcher matcher(0.7,true);
-    struct ORBmatcher sORBmatcher;
-    ORBmatcher *matcher = &sORBmatcher;
-    ORBmatcher_init(matcher, 0.7, true);          
-        
+   // struct ORBmatcher sORBmatcher;
+   // ORBmatcher *matcher = &sORBmatcher;
+   // ORBmatcher_init(matcher, 0.7, true);          
+     ORBmatcher* matcher = new ORBmatcher();
+     ORBmatcher_init(matcher, 0.7, true);
    
     vector<MapPoint*> vpMapPointMatches;
 
@@ -913,10 +916,12 @@ void Tracking_UpdateLastFrame(Tracking* pTr)
 bool Tracking_TrackWithMotionModel(Tracking* pTr)
 {
  //   ORBmatcher matcher(0.9,true);
-    struct ORBmatcher sORBmatcher;
-    ORBmatcher *matcher = &sORBmatcher;
-    ORBmatcher_init(matcher, 0.9, true);          
-  
+   // struct ORBmatcher sORBmatcher;
+   // ORBmatcher *matcher = &sORBmatcher;
+   // ORBmatcher_init(matcher, 0.9, true);          
+    ORBmatcher* matcher=new ORBmatcher();
+    ORBmatcher_init(matcher, 0.9, true);
+
     // Update last frame pose according to its reference keyframe
     // Create "visual odometry" points if in Localization Mode
     Tracking_UpdateLastFrame(pTr);
@@ -1235,10 +1240,12 @@ void Tracking_SearchLocalPoints(Tracking* pTr)
     if(nToMatch>0)
     {
        // ORBmatcher matcher(0.8);
-        struct ORBmatcher sORBmatcher;
-        ORBmatcher *matcher = &sORBmatcher;
-        ORBmatcher_init(matcher, 0.8, true);          
-  
+       // struct ORBmatcher sORBmatcher;
+       // ORBmatcher *matcher = &sORBmatcher;
+       // ORBmatcher_init(matcher, 0.8, true);          
+        ORBmatcher* matcher= new ORBmatcher();
+        ORBmatcher_init(matcher, 0.8, true);
+
         int th = 1;
         if(pTr->mSensor==System::RGBD)
             th=3;
@@ -1412,10 +1419,11 @@ bool Tracking_Relocalization(Tracking* pTr)
     // We perform first an ORB matching with each candidate
     // If enough matches are found we setup a PnP solver
    // ORBmatcher matcher(0.75,true);
-    struct ORBmatcher sORBmatcher;
-    ORBmatcher *matcher = &sORBmatcher;
-    ORBmatcher_init(matcher, 0.75, true);          
-  
+    //struct ORBmatcher sORBmatcher;
+    //ORBmatcher *matcher = &sORBmatcher;
+    //ORBmatcher_init(matcher, 0.75, true);          
+    ORBmatcher* matcher= new ORBmatcher();
+    ORBmatcher_init(matcher,0.75, true);
 
     vector<PnPsolver*> vpPnPsolvers;
     vpPnPsolvers.resize(nKFs);
@@ -1455,10 +1463,11 @@ bool Tracking_Relocalization(Tracking* pTr)
     // Until we found a camera pose supported by enough inliers
     bool bMatch = false;
 //    ORBmatcher matcher2(0.9,true);
-    struct ORBmatcher sORBmatcher2;
-    ORBmatcher *matcher2 = &sORBmatcher2;
-    ORBmatcher_init(matcher2, 0.9, true);          
-  
+   // struct ORBmatcher sORBmatcher2;
+   // ORBmatcher *matcher2 = &sORBmatcher2;
+   // ORBmatcher_init(matcher2, 0.9, true);          
+    ORBmatcher* matcher2 = new ORBmatcher();
+    ORBmatcher_init(matcher2, 0.9, true);
 
     while(nCandidates>0 && !bMatch)
     {
