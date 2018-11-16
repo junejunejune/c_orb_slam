@@ -42,9 +42,9 @@ namespace ORB_SLAM2
 struct Viewer;
 struct FrameDrawer;
 struct Map;
-struct Tracking;
-struct LocalMapping;
-struct LoopClosing;
+class Tracking;
+class LocalMapping;
+class LoopClosing;
 
 struct System
 {

@@ -1443,9 +1443,8 @@ bool Tracking_Relocalization(Tracking* pTr)
             }
             else
             {
-                PnPsolver* pSolver = new PnPsolver;
-                PnPsolver_init(pSolver, pTr->mCurrentFrame,vvpMapPointMatches[i]);
-                PnPsolver_SetRansacParameters(pSolver,0.99,10,300,4,0.5,5.991);
+                PnPsolver* pSolver = new PnPsolver(pTr->mCurrentFrame,vvpMapPointMatches[i]);
+                pSolver->SetRansacParameters(0.99,10,300,4,0.5,5.991);
                 vpPnPsolvers[i] = pSolver;
                 nCandidates++;
             }
@@ -1474,7 +1473,7 @@ bool Tracking_Relocalization(Tracking* pTr)
             bool bNoMore;
 
             PnPsolver* pSolver = vpPnPsolvers[i];
-            cv::Mat Tcw = PnPsolver_iterate(pSolver,5,bNoMore,vbInliers,nInliers);
+            cv::Mat Tcw = pSolver->iterate(5,bNoMore,vbInliers,nInliers);
 
             // If Ransac reachs max. iterations discard keyframe
             if(bNoMore)
