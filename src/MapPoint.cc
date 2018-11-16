@@ -80,7 +80,7 @@ void MapPoint_init_2(MapPoint* pMPT, const cv::Mat &Pos, Map* pMap, Frame* pFram
     pMPT->mpMap=pMap;
 
     Pos.copyTo(pMPT->mWorldPos);
-    cv::Mat Ow = pFrame->GetCameraCenter();
+    cv::Mat Ow = Frame_GetCameraCenter(pFrame);
     pMPT->mNormalVector = pMPT->mWorldPos - Ow;
     pMPT->mNormalVector = pMPT->mNormalVector/cv::norm(pMPT->mNormalVector);
 

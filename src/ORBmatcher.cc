@@ -70,7 +70,7 @@ int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame &F, const vecto
             r*=th;
 
         const vector<size_t> vIndices =
-                F.GetFeaturesInArea(pMP->mTrackProjX,pMP->mTrackProjY,r*F.mvScaleFactors[nPredictedLevel],nPredictedLevel-1,nPredictedLevel);
+                Frame_GetFeaturesInArea(&F,pMP->mTrackProjX,pMP->mTrackProjY,r*F.mvScaleFactors[nPredictedLevel],nPredictedLevel-1,nPredictedLevel);
 
         if(vIndices.empty())
             continue;
@@ -426,7 +426,7 @@ int ORBmatcher_SearchForInitialization(ORBmatcher* mpORBmatcher,Frame &F1, Frame
         if(level1>0)
             continue;
 
-        vector<size_t> vIndices2 = F2.GetFeaturesInArea(vbPrevMatched[i1].x,vbPrevMatched[i1].y, windowSize,level1,level1);
+        vector<size_t> vIndices2 = Frame_GetFeaturesInArea(&F2,vbPrevMatched[i1].x,vbPrevMatched[i1].y, windowSize,level1,level1);
 
         if(vIndices2.empty())
             continue;
@@ -1387,11 +1387,11 @@ int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame &CurrentFrame, 
                 vector<size_t> vIndices2;
 
                 if(bForward)
-                    vIndices2 = CurrentFrame.GetFeaturesInArea(u,v, radius, nLastOctave);
+                    vIndices2 = Frame_GetFeaturesInArea(&CurrentFrame,u,v, radius, nLastOctave);
                 else if(bBackward)
-                    vIndices2 = CurrentFrame.GetFeaturesInArea(u,v, radius, 0, nLastOctave);
+                    vIndices2 = Frame_GetFeaturesInArea(&CurrentFrame,u,v, radius, 0, nLastOctave);
                 else
-                    vIndices2 = CurrentFrame.GetFeaturesInArea(u,v, radius, nLastOctave-1, nLastOctave+1);
+                    vIndices2 = Frame_GetFeaturesInArea(&CurrentFrame,u,v, radius, nLastOctave-1, nLastOctave+1);
 
                 if(vIndices2.empty())
                     continue;
@@ -1529,7 +1529,7 @@ int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame &CurrentFrame, 
                 // Search in a window
                 const float radius = th*CurrentFrame.mvScaleFactors[nPredictedLevel];
 
-                const vector<size_t> vIndices2 = CurrentFrame.GetFeaturesInArea(u, v, radius, nPredictedLevel-1, nPredictedLevel+1);
+                const vector<size_t> vIndices2 = Frame_GetFeaturesInArea(&CurrentFrame,u, v, radius, nPredictedLevel-1, nPredictedLevel+1);
 
                 if(vIndices2.empty())
                     continue;

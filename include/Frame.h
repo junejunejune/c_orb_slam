@@ -40,65 +40,8 @@ namespace ORB_SLAM2
 class MapPoint;
 struct KeyFrame;
 
-class Frame
+struct Frame
 {
-public:
-    Frame();
-
-    // Copy constructor.
-    Frame(const Frame &frame);
-
-    // Constructor for stereo cameras.
-    Frame(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeStamp, ORBextractor* extractorLeft, ORBextractor* extractorRight, ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth);
-
-    // Constructor for RGB-D cameras.
-    Frame(const cv::Mat &imGray, const cv::Mat &imDepth, const double &timeStamp, ORBextractor* extractor,ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth);
-
-    // Constructor for Monocular cameras.
-    Frame(const cv::Mat &imGray, const double &timeStamp, ORBextractor* extractor,ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth);
-
-    // Extract ORB on the image. 0 for left image and 1 for right image.
-    void ExtractORB(int flag, const cv::Mat &im);
-
-    // Compute Bag of Words representation.
-    void ComputeBoW();
-
-    // Set the camera pose.
-    void SetPose(cv::Mat Tcw);
-
-    // Computes rotation, translation and camera center matrices from the camera pose.
-    void UpdatePoseMatrices();
-
-    // Returns the camera center.
-    inline cv::Mat GetCameraCenter(){
-        return mOw.clone();
-    }
-
-    // Returns inverse of rotation
-    inline cv::Mat GetRotationInverse(){
-        return mRwc.clone();
-    }
-
-    // Check if a MapPoint is in the frustum of the camera
-    // and fill variables of the MapPoint to be used by the tracking
-    bool isInFrustum(MapPoint* pMP, float viewingCosLimit);
-
-    // Compute the cell of a keypoint (return false if outside the grid)
-    bool PosInGrid(const cv::KeyPoint &kp, int &posX, int &posY);
-
-    vector<size_t> GetFeaturesInArea(const float &x, const float  &y, const float  &r, const int minLevel=-1, const int maxLevel=-1) const;
-
-    // Search a match for each keypoint in the left image to a keypoint in the right image.
-    // If there is a match, depth is computed and the right coordinate associated to the left keypoint is stored.
-    void ComputeStereoMatches();
-
-    // Associate a "right" coordinate to a keypoint if there is valid depth in the depthmap.
-    void ComputeStereoFromRGBD(const cv::Mat &imDepth);
-
-    // Backprojects a keypoint (if stereo/depth info available) into 3D world coordinates.
-    cv::Mat UnprojectStereo(const int &i);
-
-public:
     // Vocabulary used for relocalization.
     ORBVocabulary* mpORBvocabulary;
 
@@ -187,26 +130,77 @@ public:
 
     static bool mbInitialComputations;
 
-
-private:
-
-    // Undistort keypoints given OpenCV distortion parameters.
-    // Only for the RGB-D case. Stereo must be already rectified!
-    // (called in the constructor).
-    void UndistortKeyPoints();
-
-    // Computes image bounds for the undistorted image (called in the constructor).
-    void ComputeImageBounds(const cv::Mat &imLeft);
-
-    // Assign keypoints to the grid for speed up feature matching (called in the constructor).
-    void AssignFeaturesToGrid();
-
     // Rotation, translation and camera center
     cv::Mat mRcw;
     cv::Mat mtcw;
     cv::Mat mRwc;
     cv::Mat mOw; //==mtwc
 };
+    // Copy constructor.
+    void Frame_init_1(Frame* pF,const Frame &frame);
+
+    // Constructor for stereo cameras.
+    void Frame_init_2(Frame* pF,const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeStamp, ORBextractor* extractorLeft, ORBextractor* extractorRight, ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth);
+
+    // Constructor for RGB-D cameras.
+    void Frame_init_3(Frame* pF,const cv::Mat &imGray, const cv::Mat &imDepth, const double &timeStamp, ORBextractor* extractor,ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth);
+
+    // Constructor for Monocular cameras.
+    void Frame_init_4(Frame* pF,const cv::Mat &imGray, const double &timeStamp, ORBextractor* extractor,ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth);
+
+    // Extract ORB on the image. 0 for left image and 1 for right image.
+    void Frame_ExtractORB(Frame* pF,int flag, const cv::Mat &im);
+
+    // Compute Bag of Words representation.
+    void Frame_ComputeBoW(Frame* pF);
+
+    // Set the camera pose.
+    void Frame_SetPose(Frame* pF,cv::Mat Tcw);
+
+    // Computes rotation, translation and camera center matrices from the camera pose.
+    void Frame_UpdatePoseMatrices(Frame* pF);
+
+    // Returns the camera center.
+    inline cv::Mat Frame_GetCameraCenter(Frame* pF){
+        return pF->mOw.clone();
+    }
+
+    // Returns inverse of rotation
+    inline cv::Mat Frame_GetRotationInverse(Frame* pF){
+        return pF->mRwc.clone();
+    }
+
+    // Check if a MapPoint is in the frustum of the camera
+    // and fill variables of the MapPoint to be used by the tracking
+    bool Frame_isInFrustum(Frame* pF,MapPoint* pMP, float viewingCosLimit);
+
+    // Compute the cell of a keypoint (return false if outside the grid)
+    bool Frame_PosInGrid(Frame* pF,const cv::KeyPoint &kp, int &posX, int &posY);
+
+    vector<size_t> Frame_GetFeaturesInArea(Frame* pF,const float &x, const float  &y, const float  &r, const int minLevel=-1, const int maxLevel=-1) ;
+
+    // Search a match for each keypoint in the left image to a keypoint in the right image.
+    // If there is a match, depth is computed and the right coordinate associated to the left keypoint is stored.
+    void Frame_ComputeStereoMatches(Frame* pF);
+
+    // Associate a "right" coordinate to a keypoint if there is valid depth in the depthmap.
+    void Frame_ComputeStereoFromRGBD(Frame* pF,const cv::Mat &imDepth);
+
+    // Backprojects a keypoint (if stereo/depth info available) into 3D world coordinates.
+    cv::Mat Frame_UnprojectStereo(Frame* pF,const int &i);
+
+
+    // Undistort keypoints given OpenCV distortion parameters.
+    // Only for the RGB-D case. Stereo must be already rectified!
+    // (called in the constructor).
+    void Frame_UndistortKeyPoints(Frame* pF);
+
+    // Computes image bounds for the undistorted image (called in the constructor).
+    void Frame_ComputeImageBounds(Frame* pF,const cv::Mat &imLeft);
+
+    // Assign keypoints to the grid for speed up feature matching (called in the constructor).
+    void Frame_AssignFeaturesToGrid(Frame* pF);
+
 
 }// namespace ORB_SLAM
 

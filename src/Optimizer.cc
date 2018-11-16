@@ -445,7 +445,7 @@ int Optimizer_PoseOptimization(Frame *pFrame)
     g2o::VertexSE3Expmap* vSE3_recov = static_cast<g2o::VertexSE3Expmap*>(optimizer.vertex(0));
     g2o::SE3Quat SE3quat_recov = vSE3_recov->estimate();
     cv::Mat pose = Converter_toCvMat(SE3quat_recov);
-    pFrame->SetPose(pose);
+    Frame_SetPose(pFrame,pose);
 
     return nInitialCorrespondences-nBad;
 }

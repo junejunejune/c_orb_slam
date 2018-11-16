@@ -210,7 +210,7 @@ cv::Mat Tracking_GrabImageStereo(Tracking* pTr,const cv::Mat &imRectLeft, const 
         }
     }
 
-    pTr->mCurrentFrame = Frame(pTr->mImGray,imGrayRight,timestamp,pTr->mpORBextractorLeft,pTr->mpORBextractorRight,pTr->mpORBVocabulary,pTr->mK,pTr->mDistCoef,pTr->mbf,pTr->mThDepth);
+    Frame_init_2(&pTr->mCurrentFrame,pTr->mImGray,imGrayRight,timestamp,pTr->mpORBextractorLeft,pTr->mpORBextractorRight,pTr->mpORBVocabulary,pTr->mK,pTr->mDistCoef,pTr->mbf,pTr->mThDepth);
 
     Tracking_Track(pTr);
 
@@ -241,7 +241,7 @@ cv::Mat Tracking_GrabImageRGBD(Tracking* pTr,const cv::Mat &imRGB,const cv::Mat 
     if((fabs(pTr->mDepthMapFactor-1.0f)>1e-5) || imDepth.type()!=CV_32F)
         imDepth.convertTo(imDepth,CV_32F,pTr->mDepthMapFactor);
 
-    pTr->mCurrentFrame = Frame(pTr->mImGray,imDepth,timestamp,pTr->mpORBextractorLeft,pTr->mpORBVocabulary,pTr->mK,pTr->mDistCoef,pTr->mbf,pTr->mThDepth);
+    Frame_init_3(&pTr->mCurrentFrame,pTr->mImGray,imDepth,timestamp,pTr->mpORBextractorLeft,pTr->mpORBVocabulary,pTr->mK,pTr->mDistCoef,pTr->mbf,pTr->mThDepth);
 
     Tracking_Track(pTr);
 
@@ -269,9 +269,9 @@ cv::Mat Tracking_GrabImageMonocular(Tracking* pTr,const cv::Mat &im, const doubl
     }
 
     if(pTr->mState==Tracking::NOT_INITIALIZED || pTr->mState==Tracking::NO_IMAGES_YET)
-        pTr->mCurrentFrame = Frame(pTr->mImGray,timestamp,pTr->mpIniORBextractor,pTr->mpORBVocabulary,pTr->mK,pTr->mDistCoef,pTr->mbf,pTr->mThDepth);
+        Frame_init_4(&pTr->mCurrentFrame,pTr->mImGray,timestamp,pTr->mpIniORBextractor,pTr->mpORBVocabulary,pTr->mK,pTr->mDistCoef,pTr->mbf,pTr->mThDepth);
     else
-        pTr->mCurrentFrame = Frame(pTr->mImGray,timestamp,pTr->mpORBextractorLeft,pTr->mpORBVocabulary,pTr->mK,pTr->mDistCoef,pTr->mbf,pTr->mThDepth);
+        Frame_init_4(&pTr->mCurrentFrame,pTr->mImGray,timestamp,pTr->mpORBextractorLeft,pTr->mpORBVocabulary,pTr->mK,pTr->mDistCoef,pTr->mbf,pTr->mThDepth);
 
     Tracking_Track(pTr);
 
@@ -381,7 +381,7 @@ void Tracking_Track(Tracking* pTr)
 
                     if(bOKMM && !bOKReloc)
                     {
-                        pTr->mCurrentFrame.SetPose(TcwMM);
+                        Frame_SetPose(&pTr->mCurrentFrame,TcwMM);
                         pTr->mCurrentFrame.mvpMapPoints = vpMPsMM;
                         pTr->mCurrentFrame.mvbOutlier = vbOutMM;
 
@@ -438,8 +438,8 @@ void Tracking_Track(Tracking* pTr)
             if(!pTr->mLastFrame.mTcw.empty())
             {
                 cv::Mat LastTwc = cv::Mat::eye(4,4,CV_32F);
-                pTr->mLastFrame.GetRotationInverse().copyTo(LastTwc.rowRange(0,3).colRange(0,3));
-                pTr->mLastFrame.GetCameraCenter().copyTo(LastTwc.rowRange(0,3).col(3));
+                Frame_GetRotationInverse(&pTr->mLastFrame).copyTo(LastTwc.rowRange(0,3).colRange(0,3));
+                Frame_GetCameraCenter(&pTr->mLastFrame).copyTo(LastTwc.rowRange(0,3).col(3));
                 pTr->mVelocity = pTr->mCurrentFrame.mTcw*LastTwc;
             }
             else
@@ -496,7 +496,7 @@ void Tracking_Track(Tracking* pTr)
         if(!pTr->mCurrentFrame.mpReferenceKF)
             pTr->mCurrentFrame.mpReferenceKF = pTr->mpReferenceKF;
 
-        pTr->mLastFrame = Frame(pTr->mCurrentFrame);
+        Frame_init_1(&pTr->mLastFrame,pTr->mCurrentFrame);
     }
 
     // Store frame pose information to retrieve the complete camera trajectory afterwards.
@@ -525,7 +525,7 @@ void Tracking_StereoInitialization(Tracking* pTr)
     if(pTr->mCurrentFrame.N>500)
     {
         // Set Frame pose to the origin
-        pTr->mCurrentFrame.SetPose(cv::Mat::eye(4,4,CV_32F));
+        Frame_SetPose(&pTr->mCurrentFrame,cv::Mat::eye(4,4,CV_32F));
 
         // Create KeyFrame
        // KeyFrame* pKFini = new KeyFrame(mCurrentFrame,mpMap,mpKeyFrameDB);
@@ -542,7 +542,7 @@ void Tracking_StereoInitialization(Tracking* pTr)
             float z = pTr->mCurrentFrame.mvDepth[i];
             if(z>0)
             {
-                cv::Mat x3D = pTr->mCurrentFrame.UnprojectStereo(i);
+                cv::Mat x3D = Frame_UnprojectStereo(&pTr->mCurrentFrame,i);
                 MapPoint* pNewMP = new MapPoint;
                 MapPoint_init_1(pNewMP, x3D,pKFini,pTr->mpMap);
                 MapPoint_AddObservation(pNewMP,pKFini,i);
@@ -559,7 +559,7 @@ void Tracking_StereoInitialization(Tracking* pTr)
 
         LocalMapping_InsertKeyFrame(pTr->mpLocalMapper,pKFini);
 
-        pTr->mLastFrame = Frame(pTr->mCurrentFrame);
+        Frame_init_1(&pTr->mLastFrame,pTr->mCurrentFrame);
         pTr->mnLastKeyFrameId=pTr->mCurrentFrame.mnId;
         pTr->mpLastKeyFrame = pKFini;
 
@@ -586,8 +586,8 @@ void Tracking_MonocularInitialization(Tracking* pTr)
         // Set Reference Frame
         if(pTr->mCurrentFrame.mvKeys.size()>100)
         {
-            pTr->mInitialFrame = Frame(pTr->mCurrentFrame);
-            pTr->mLastFrame = Frame(pTr->mCurrentFrame);
+            Frame_init_1(&pTr->mInitialFrame,pTr->mCurrentFrame);
+            Frame_init_1(&pTr->mLastFrame,pTr->mCurrentFrame);
             pTr->mvbPrevMatched.resize(pTr->mCurrentFrame.mvKeysUn.size());
             for(size_t i=0; i<pTr->mCurrentFrame.mvKeysUn.size(); i++)
                 pTr->mvbPrevMatched[i]=pTr->mCurrentFrame.mvKeysUn[i].pt;
@@ -647,11 +647,11 @@ void Tracking_MonocularInitialization(Tracking* pTr)
             }
 
             // Set Frame Poses
-            pTr->mInitialFrame.SetPose(cv::Mat::eye(4,4,CV_32F));
+            Frame_SetPose(&pTr->mInitialFrame,cv::Mat::eye(4,4,CV_32F));
             cv::Mat Tcw = cv::Mat::eye(4,4,CV_32F);
             Rcw.copyTo(Tcw.rowRange(0,3).colRange(0,3));
             tcw.copyTo(Tcw.rowRange(0,3).col(3));
-            pTr->mCurrentFrame.SetPose(Tcw);
+            Frame_SetPose(&pTr->mCurrentFrame,Tcw);
 
             Tracking_CreateInitialMapMonocular(pTr);
         }
@@ -755,7 +755,7 @@ void Tracking_CreateInitialMapMonocular(Tracking* pTr)
     LocalMapping_InsertKeyFrame(pTr->mpLocalMapper,pKFini);
     LocalMapping_InsertKeyFrame(pTr->mpLocalMapper,pKFcur);
 
-    pTr->mCurrentFrame.SetPose(KeyFrame_GetPose(pKFcur));
+    Frame_SetPose(&pTr->mCurrentFrame,KeyFrame_GetPose(pKFcur));
     pTr->mnLastKeyFrameId=pTr->mCurrentFrame.mnId;
     pTr->mpLastKeyFrame = pKFcur;
 
@@ -797,7 +797,7 @@ void Tracking_CheckReplacedInLastFrame(Tracking* pTr)
 bool Tracking_TrackReferenceKeyFrame(Tracking* pTr)
 {
     // Compute Bag of Words vector
-    pTr->mCurrentFrame.ComputeBoW();
+    Frame_ComputeBoW(&pTr->mCurrentFrame);
 
     // We perform first an ORB matching with the reference keyframe
     // If enough matches are found we setup a PnP solver
@@ -815,7 +815,7 @@ bool Tracking_TrackReferenceKeyFrame(Tracking* pTr)
         return false;
 
     pTr->mCurrentFrame.mvpMapPoints = vpMapPointMatches;
-    pTr->mCurrentFrame.SetPose(pTr->mLastFrame.mTcw);
+    Frame_SetPose(&pTr->mCurrentFrame,pTr->mLastFrame.mTcw);
 
     Optimizer_PoseOptimization(&pTr->mCurrentFrame);
 
@@ -849,7 +849,7 @@ void Tracking_UpdateLastFrame(Tracking* pTr)
     KeyFrame* pRef = pTr->mLastFrame.mpReferenceKF;
     cv::Mat Tlr = pTr->mlRelativeFramePoses.back();
 
-    pTr->mLastFrame.SetPose(Tlr*KeyFrame_GetPose(pRef));
+    Frame_SetPose(&pTr->mLastFrame,Tlr*KeyFrame_GetPose(pRef));
 
     if(pTr->mnLastKeyFrameId==pTr->mLastFrame.mnId || pTr->mSensor==System::MONOCULAR || !pTr->mbOnlyTracking)
         return;
@@ -891,7 +891,7 @@ void Tracking_UpdateLastFrame(Tracking* pTr)
 
         if(bCreateNew)
         {
-            cv::Mat x3D = pTr->mLastFrame.UnprojectStereo(i);
+            cv::Mat x3D = Frame_UnprojectStereo(&pTr->mLastFrame,i);
             MapPoint* pNewMP = new MapPoint;
             MapPoint_init_2(pNewMP, x3D,pTr->mpMap,&pTr->mLastFrame,i);
 
@@ -921,7 +921,7 @@ bool Tracking_TrackWithMotionModel(Tracking* pTr)
     // Create "visual odometry" points if in Localization Mode
     Tracking_UpdateLastFrame(pTr);
 
-    pTr->mCurrentFrame.SetPose(pTr->mVelocity*pTr->mLastFrame.mTcw);
+    Frame_SetPose(&pTr->mCurrentFrame,pTr->mVelocity*pTr->mLastFrame.mTcw);
 
     fill(pTr->mCurrentFrame.mvpMapPoints.begin(),pTr->mCurrentFrame.mvpMapPoints.end(),static_cast<MapPoint*>(NULL));
 
@@ -1124,7 +1124,7 @@ void Tracking_CreateNewKeyFrame(Tracking* pTr)
 
     if(pTr->mSensor!=System::MONOCULAR)
     {
-        pTr->mCurrentFrame.UpdatePoseMatrices();
+        Frame_UpdatePoseMatrices(&pTr->mCurrentFrame);
 
         // We sort points by the measured depth by the stereo/RGBD sensor.
         // We create all those MapPoints whose depth < mThDepth.
@@ -1162,7 +1162,7 @@ void Tracking_CreateNewKeyFrame(Tracking* pTr)
 
                 if(bCreateNew)
                 {
-                    cv::Mat x3D = pTr->mCurrentFrame.UnprojectStereo(i);
+                    cv::Mat x3D = Frame_UnprojectStereo(&pTr->mCurrentFrame,i);
                     MapPoint* pNewMP = new MapPoint;
                     MapPoint_init_1(pNewMP,x3D,pKF,pTr->mpMap);
                     MapPoint_AddObservation(pNewMP,pKF,i);
@@ -1225,7 +1225,7 @@ void Tracking_SearchLocalPoints(Tracking* pTr)
         if(MapPoint_isBad(pMP))
             continue;
         // Project (this fills MapPoint variables for matching)
-        if(pTr->mCurrentFrame.isInFrustum(pMP,0.5))
+        if(Frame_isInFrustum(&pTr->mCurrentFrame,pMP,0.5))
         {
             MapPoint_IncreaseVisible(pMP);
             nToMatch++;
@@ -1398,7 +1398,7 @@ void Tracking_UpdateLocalKeyFrames(Tracking* pTr)
 bool Tracking_Relocalization(Tracking* pTr)
 {
     // Compute Bag of Words Vector
-    pTr->mCurrentFrame.ComputeBoW();
+    Frame_ComputeBoW(&pTr->mCurrentFrame);
 
     // Relocalization is performed when tracking is lost
     // Track Lost: Query KeyFrame Database for keyframe candidates for relocalisation
