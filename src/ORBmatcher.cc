@@ -410,7 +410,6 @@ int ORBmatcher_SearchForInitialization(ORBmatcher* mpORBmatcher,Frame &F1, Frame
 {
     int nmatches=0;
     vnMatches12 = vector<int>(F1.mvKeysUn.size(),-1);
-
     vector<int> rotHist[HISTO_LENGTH];
     for(int i=0;i<HISTO_LENGTH;i++)
         rotHist[i].reserve(500);
@@ -426,7 +425,7 @@ int ORBmatcher_SearchForInitialization(ORBmatcher* mpORBmatcher,Frame &F1, Frame
         if(level1>0)
             continue;
 
-        vector<size_t> vIndices2 = Frame_GetFeaturesInArea(&F2,vbPrevMatched[i1].x,vbPrevMatched[i1].y, windowSize,level1,level1);
+        vector<size_t> vIndices2 = Frame_GetFeaturesInArea(F2,vbPrevMatched[i1].x,vbPrevMatched[i1].y, windowSize,level1,level1);
 
         if(vIndices2.empty())
             continue;
@@ -444,10 +443,8 @@ int ORBmatcher_SearchForInitialization(ORBmatcher* mpORBmatcher,Frame &F1, Frame
             cv::Mat d2 = F2.mDescriptors.row(i2);
 
             int dist = ORBmatcher_DescriptorDistance(d1,d2);
-
             if(vMatchedDistance[i2]<=dist)
                 continue;
-
             if(dist<bestDist)
             {
                 bestDist2=bestDist;
@@ -459,7 +456,7 @@ int ORBmatcher_SearchForInitialization(ORBmatcher* mpORBmatcher,Frame &F1, Frame
                 bestDist2=dist;
             }
         }
-
+cout<<"bestDist2: "<<bestDist2<<endl;
         if(bestDist<=TH_LOW)
         {
             if(bestDist<(float)bestDist2*mpORBmatcher->mfNNratio)

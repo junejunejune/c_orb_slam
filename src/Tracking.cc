@@ -580,7 +580,6 @@ void Tracking_StereoInitialization(Tracking* pTr)
 
 void Tracking_MonocularInitialization(Tracking* pTr)
 {
-
     if(!pTr->mpInitializer)
     {
         // Set Reference Frame
@@ -606,6 +605,7 @@ void Tracking_MonocularInitialization(Tracking* pTr)
     }
     else
     {
+cout<<"pTr->mCurrentFrame.mvKeys.size(): "<<pTr->mCurrentFrame.mvKeys.size()<<endl;
         // Try to initialize
         if((int)pTr->mCurrentFrame.mvKeys.size()<=100)
         {
@@ -620,11 +620,12 @@ void Tracking_MonocularInitialization(Tracking* pTr)
        // struct ORBmatcher sORBmatcher;
        // ORBmatcher *matcher = &sORBmatcher;
        // ORBmatcher_init(matcher, 0.9, true);          
-        ORBmatcher* matcher = new ORBmatcher();
+        ORBmatcher *matcher = new ORBmatcher();
         ORBmatcher_init(matcher, 0.9, true);
-
         int nmatches = ORBmatcher_SearchForInitialization(matcher, pTr->mInitialFrame,pTr->mCurrentFrame,pTr->mvbPrevMatched,pTr->mvIniMatches,100);
 cout<<"nmatches: "<<nmatches<<endl;
+//cout<<"pTr->mInitialFrame->mvKeysUn.size()"<<pTr->mInitialFrame.mvKeysUn.size()<<endl;
+//cout<<"pTr->mCurrentFrame->mvKeysUn.size()"<<pTr->mCurrentFrame.mvKeysUn.size()<<endl;
         // Check if there are enough correspondences
         if(nmatches<100)
         {
