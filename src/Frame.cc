@@ -36,7 +36,6 @@ float Frame::mfGridElementWidthInv, Frame::mfGridElementHeightInv;
 //Copy Constructor
 void Frame_init_1(Frame* pF,const Frame &frame)
 {
-cout<<"Frame_init_1"<<endl;
      pF->mpORBvocabulary=frame.mpORBvocabulary;
      pF->mpORBextractorLeft=frame.mpORBextractorLeft;
      pF->mpORBextractorRight=frame.mpORBextractorRight;
@@ -79,7 +78,6 @@ cout<<"Frame_init_1"<<endl;
 
 void Frame_init_2(Frame* pF,const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeStamp, ORBextractor* extractorLeft, ORBextractor* extractorRight, ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth)
 {
-cout<<"Frame_init_2"<<endl;
     pF->mpORBvocabulary=voc;
     pF->mpORBextractorLeft=extractorLeft;
     pF->mpORBextractorRight=extractorRight;
@@ -146,7 +144,6 @@ cout<<"Frame_init_2"<<endl;
 
 void Frame_init_3(Frame* pF,const cv::Mat &imGray, const cv::Mat &imDepth, const double &timeStamp, ORBextractor* extractor,ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth)
 {
-cout<<"Frame_init_3"<<endl;
     pF->mpORBvocabulary=voc;
     pF->mpORBextractorLeft=extractor;
     pF->mpORBextractorRight=static_cast<ORBextractor*>(NULL);
@@ -209,7 +206,6 @@ cout<<"Frame_init_3"<<endl;
 
 void Frame_init_4(Frame* pF,const cv::Mat &imGray, const double &timeStamp, ORBextractor* extractor,ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth)
 {
-cout<<"Frame_init_4"<<endl;
     pF->mpORBvocabulary=voc;
     pF->mpORBextractorLeft=extractor;
     pF->mpORBextractorRight=static_cast<ORBextractor*>(NULL);
