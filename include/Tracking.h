@@ -70,7 +70,7 @@ struct Tracking
     int mSensor;
 
     // Current Frame
-    Frame mCurrentFrame;
+    Frame* mCurrentFrame;
     cv::Mat mImGray;
 
     // Initialization Variables (Monocular)
@@ -78,7 +78,7 @@ struct Tracking
     std::vector<int> mvIniMatches;
     std::vector<cv::Point2f> mvbPrevMatched;
     std::vector<cv::Point3f> mvIniP3D;
-    Frame mInitialFrame;
+    Frame* mInitialFrame;
 
     // Lists used to recover the full camera trajectory at the end of the execution.
     // Basically we store the reference keyframe for each frame and its relative transformation
@@ -149,7 +149,7 @@ struct Tracking
 
     //Last Frame, KeyFrame and Relocalisation Info
     KeyFrame* mpLastKeyFrame;
-    Frame mLastFrame;
+    Frame* mLastFrame;
     unsigned int mnLastKeyFrameId;
     unsigned int mnLastRelocFrameId;
 

@@ -53,15 +53,15 @@ struct ORBmatcher
 
     // Search matches between Frame keypoints and projected MapPoints. Returns number of matches
     // Used to track the local map (Tracking)
-    int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame &F, const std::vector<MapPoint*> &vpMapPoints, const float th=3);
+    int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame *F, const std::vector<MapPoint*> &vpMapPoints, const float th=3);
 
     // Project MapPoints tracked in last frame into the current frame and search matches.
     // Used to track from previous frame (Tracking)
-    int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame &CurrentFrame, const Frame &LastFrame, const float th, const bool bMono);
+    int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame *CurrentFrame, const Frame *LastFrame, const float th, const bool bMono);
 
     // Project MapPoints seen in KeyFrame into the Frame and search matches.
     // Used in relocalisation (Tracking)
-    int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame &CurrentFrame, KeyFrame* pKF, const std::set<MapPoint*> &sAlreadyFound, const float th, const int ORBdist);
+    int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame *CurrentFrame, KeyFrame* pKF, const std::set<MapPoint*> &sAlreadyFound, const float th, const int ORBdist);
 
     // Project MapPoints using a Similarity Transformation and search matches.
     // Used in loop detection (Loop Closing)
@@ -70,7 +70,7 @@ struct ORBmatcher
     // Search matches between MapPoints in a KeyFrame and ORB in a Frame.
     // Brute force constrained to ORB that belong to the same vocabulary node (at a certain level)
     // Used in Relocalisation and Loop Detection
-    int ORBmatcher_SearchByBoW(ORBmatcher* mpORBmatcher,KeyFrame *pKF, Frame &F, std::vector<MapPoint*> &vpMapPointMatches);
+    int ORBmatcher_SearchByBoW(ORBmatcher* mpORBmatcher,KeyFrame *pKF, Frame *F, std::vector<MapPoint*> &vpMapPointMatches);
     int ORBmatcher_SearchByBoW(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, KeyFrame* pKF2, std::vector<MapPoint*> &vpMatches12);
 
     // Matching for the Map Initialization (only used in the monocular case)

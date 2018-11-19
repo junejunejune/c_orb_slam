@@ -180,8 +180,8 @@ cv::Mat System_TrackStereo(System *pSystem,const cv::Mat &imLeft, const cv::Mat 
 
     unique_lock<mutex> lock2(pSystem->mMutexState);
     pSystem->mTrackingState = pSystem->mpTracker->mState;
-    pSystem->mTrackedMapPoints = pSystem->mpTracker->mCurrentFrame.mvpMapPoints;
-    pSystem->mTrackedKeyPointsUn = pSystem->mpTracker->mCurrentFrame.mvKeysUn;
+    pSystem->mTrackedMapPoints = pSystem->mpTracker->mCurrentFrame->mvpMapPoints;
+    pSystem->mTrackedKeyPointsUn = pSystem->mpTracker->mCurrentFrame->mvKeysUn;
     return Tcw;
 }
 
@@ -231,8 +231,8 @@ cv::Mat System_TrackRGBD(System *pSystem,const cv::Mat &im, const cv::Mat &depth
 
     unique_lock<mutex> lock2(pSystem->mMutexState);
     pSystem->mTrackingState = pSystem->mpTracker->mState;
-    pSystem->mTrackedMapPoints = pSystem->mpTracker->mCurrentFrame.mvpMapPoints;
-    pSystem->mTrackedKeyPointsUn = pSystem->mpTracker->mCurrentFrame.mvKeysUn;
+    pSystem->mTrackedMapPoints = pSystem->mpTracker->mCurrentFrame->mvpMapPoints;
+    pSystem->mTrackedKeyPointsUn = pSystem->mpTracker->mCurrentFrame->mvKeysUn;
     return Tcw;
 }
 
@@ -282,8 +282,8 @@ cv::Mat System_TrackMonocular(System *pSystem,const cv::Mat &im, const double &t
 
     unique_lock<mutex> lock2(pSystem->mMutexState);
     pSystem->mTrackingState = pSystem->mpTracker->mState;
-    pSystem->mTrackedMapPoints = pSystem->mpTracker->mCurrentFrame.mvpMapPoints;
-    pSystem->mTrackedKeyPointsUn = pSystem->mpTracker->mCurrentFrame.mvKeysUn;
+    pSystem->mTrackedMapPoints = pSystem->mpTracker->mCurrentFrame->mvpMapPoints;
+    pSystem->mTrackedKeyPointsUn = pSystem->mpTracker->mCurrentFrame->mvKeysUn;
 
     return Tcw;
 }

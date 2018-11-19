@@ -37,9 +37,9 @@ bool KeyFrame_lId(KeyFrame* pKF1, KeyFrame* pKF2){
 }
 
 
-void KeyFrame_init(KeyFrame *pKeyFrame, Frame &F, Map *pMap, KeyFrameDatabase *pKFDB)
+void KeyFrame_init(KeyFrame *pKeyFrame, Frame *F, Map *pMap, KeyFrameDatabase *pKFDB)
 {
-    pKeyFrame->mnFrameId=F.mnId;  pKeyFrame->mTimeStamp=F.mTimeStamp; pKeyFrame->mnGridCols=FRAME_GRID_COLS; pKeyFrame->mnGridRows=FRAME_GRID_ROWS;
+    pKeyFrame->mnFrameId=F->mnId;  pKeyFrame->mTimeStamp=F.mTimeStamp; pKeyFrame->mnGridCols=FRAME_GRID_COLS; pKeyFrame->mnGridRows=FRAME_GRID_ROWS;
     pKeyFrame->mfGridElementWidthInv=F.mfGridElementWidthInv; pKeyFrame->mfGridElementHeightInv=F.mfGridElementHeightInv;
     pKeyFrame->mnTrackReferenceForFrame=0; pKeyFrame->mnFuseTargetForKF=0; pKeyFrame->mnBALocalForKF=0; pKeyFrame->mnBAFixedForKF=0;
     pKeyFrame->mnLoopQuery=0; pKeyFrame->mnLoopWords=0; pKeyFrame->mnRelocQuery=0; pKeyFrame->mnRelocWords=0; pKeyFrame->mnBAGlobalForKF=0;
