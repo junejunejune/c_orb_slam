@@ -39,25 +39,25 @@ bool KeyFrame_lId(KeyFrame* pKF1, KeyFrame* pKF2){
 
 void KeyFrame_init(KeyFrame *pKeyFrame, Frame *F, Map *pMap, KeyFrameDatabase *pKFDB)
 {
-    pKeyFrame->mnFrameId=F->mnId;  pKeyFrame->mTimeStamp=F.mTimeStamp; pKeyFrame->mnGridCols=FRAME_GRID_COLS; pKeyFrame->mnGridRows=FRAME_GRID_ROWS;
-    pKeyFrame->mfGridElementWidthInv=F.mfGridElementWidthInv; pKeyFrame->mfGridElementHeightInv=F.mfGridElementHeightInv;
+    pKeyFrame->mnFrameId=F->mnId;  pKeyFrame->mTimeStamp=F->mTimeStamp; pKeyFrame->mnGridCols=FRAME_GRID_COLS; pKeyFrame->mnGridRows=FRAME_GRID_ROWS;
+    pKeyFrame->mfGridElementWidthInv=F->mfGridElementWidthInv; pKeyFrame->mfGridElementHeightInv=F->mfGridElementHeightInv;
     pKeyFrame->mnTrackReferenceForFrame=0; pKeyFrame->mnFuseTargetForKF=0; pKeyFrame->mnBALocalForKF=0; pKeyFrame->mnBAFixedForKF=0;
     pKeyFrame->mnLoopQuery=0; pKeyFrame->mnLoopWords=0; pKeyFrame->mnRelocQuery=0; pKeyFrame->mnRelocWords=0; pKeyFrame->mnBAGlobalForKF=0;
-    pKeyFrame->fx=F.fx; pKeyFrame->fy=F.fy; pKeyFrame->cx=F.cx; pKeyFrame->cy=F.cy; pKeyFrame->invfx=F.invfx; pKeyFrame->invfy=F.invfy;
-    pKeyFrame->mbf=F.mbf; 
-    pKeyFrame->mb=F.mb; 
-    pKeyFrame->mThDepth=F.mThDepth; 
-    pKeyFrame->N=F.N; 
+    pKeyFrame->fx=F->fx; pKeyFrame->fy=F->fy; pKeyFrame->cx=F->cx; pKeyFrame->cy=F->cy; pKeyFrame->invfx=F->invfx; pKeyFrame->invfy=F->invfy;
+    pKeyFrame->mbf=F->mbf; 
+    pKeyFrame->mb=F->mb; 
+    pKeyFrame->mThDepth=F->mThDepth; 
+    pKeyFrame->N=F->N; 
     
-    pKeyFrame->mvKeys=F.mvKeys;
-    pKeyFrame->mvKeysUn=F.mvKeysUn;
-    pKeyFrame->mvuRight=F.mvuRight; pKeyFrame->mvDepth=F.mvDepth; pKeyFrame->mDescriptors=F.mDescriptors.clone();
-    pKeyFrame->mBowVec=F.mBowVec; pKeyFrame->mFeatVec=F.mFeatVec; pKeyFrame->mnScaleLevels=F.mnScaleLevels; pKeyFrame->mfScaleFactor=F.mfScaleFactor;
-    pKeyFrame->mfLogScaleFactor=F.mfLogScaleFactor; pKeyFrame->mvScaleFactors=F.mvScaleFactors; pKeyFrame->mvLevelSigma2=F.mvLevelSigma2;
-    pKeyFrame->mvInvLevelSigma2=F.mvInvLevelSigma2; pKeyFrame->mnMinX=F.mnMinX; pKeyFrame->mnMinY=F.mnMinY; pKeyFrame->mnMaxX=F.mnMaxX;
-    pKeyFrame->mnMaxY=F.mnMaxY; pKeyFrame->mK=F.mK; pKeyFrame->mvpMapPoints=F.mvpMapPoints; pKeyFrame->mpKeyFrameDB=pKFDB;
-    pKeyFrame->mpORBvocabulary=F.mpORBvocabulary; pKeyFrame->mbFirstConnection=true; pKeyFrame->mpParent=NULL; pKeyFrame->mbNotErase=false;
-    pKeyFrame->mbToBeErased=false; pKeyFrame->mbBad=false; pKeyFrame->mHalfBaseline=F.mb/2; pKeyFrame->mpMap=pMap;
+    pKeyFrame->mvKeys=F->mvKeys;
+    pKeyFrame->mvKeysUn=F->mvKeysUn;
+    pKeyFrame->mvuRight=F->mvuRight; pKeyFrame->mvDepth=F->mvDepth; pKeyFrame->mDescriptors=F->mDescriptors.clone();
+    pKeyFrame->mBowVec=F->mBowVec; pKeyFrame->mFeatVec=F->mFeatVec; pKeyFrame->mnScaleLevels=F->mnScaleLevels; pKeyFrame->mfScaleFactor=F->mfScaleFactor;
+    pKeyFrame->mfLogScaleFactor=F->mfLogScaleFactor; pKeyFrame->mvScaleFactors=F->mvScaleFactors; pKeyFrame->mvLevelSigma2=F->mvLevelSigma2;
+    pKeyFrame->mvInvLevelSigma2=F->mvInvLevelSigma2; pKeyFrame->mnMinX=F->mnMinX; pKeyFrame->mnMinY=F->mnMinY; pKeyFrame->mnMaxX=F->mnMaxX;
+    pKeyFrame->mnMaxY=F->mnMaxY; pKeyFrame->mK=F->mK; pKeyFrame->mvpMapPoints=F->mvpMapPoints; pKeyFrame->mpKeyFrameDB=pKFDB;
+    pKeyFrame->mpORBvocabulary=F->mpORBvocabulary; pKeyFrame->mbFirstConnection=true; pKeyFrame->mpParent=NULL; pKeyFrame->mbNotErase=false;
+    pKeyFrame->mbToBeErased=false; pKeyFrame->mbBad=false; pKeyFrame->mHalfBaseline=F->mb/2; pKeyFrame->mpMap=pMap;
 
     pKeyFrame->mnId=KeyFrame::nNextId++;
 
@@ -66,10 +66,10 @@ void KeyFrame_init(KeyFrame *pKeyFrame, Frame *F, Map *pMap, KeyFrameDatabase *p
     {
         pKeyFrame->mGrid[i].resize(pKeyFrame->mnGridRows);
         for(int j=0; j<pKeyFrame->mnGridRows; j++)
-            pKeyFrame->mGrid[i][j] = F.mGrid[i][j];
+            pKeyFrame->mGrid[i][j] = F->mGrid[i][j];
     }
 
-    KeyFrame_SetPose(pKeyFrame, F.mTcw);    
+    KeyFrame_SetPose(pKeyFrame, F->mTcw);    
 }
 
 void KeyFrame_ComputeBoW(KeyFrame *pKeyFrame)

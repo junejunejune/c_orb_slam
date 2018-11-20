@@ -137,7 +137,7 @@ struct Frame
     cv::Mat mOw; //==mtwc
 };
     // Copy constructor.
-    void Frame_init_1(Frame* pF,const Frame &frame);
+    void Frame_init_1(Frame* pF,const Frame *frame);
 
     // Constructor for stereo cameras.
     void Frame_init_2(Frame* pF,const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeStamp, ORBextractor* extractorLeft, ORBextractor* extractorRight, ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth);

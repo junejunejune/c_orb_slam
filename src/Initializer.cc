@@ -30,23 +30,23 @@
 namespace ORB_SLAM2
 {
 
-void Initializer_init(Initializer *pIni,const Frame &ReferenceFrame, float sigma, int iterations)
+void Initializer_init(Initializer *pIni,const Frame *ReferenceFrame, float sigma, int iterations)
 {
-    pIni->mK = ReferenceFrame.mK.clone();
+    pIni->mK = ReferenceFrame->mK.clone();
 
-    pIni->mvKeys1 = ReferenceFrame.mvKeysUn;
+    pIni->mvKeys1 = ReferenceFrame->mvKeysUn;
 
     pIni->mSigma = sigma;
     pIni->mSigma2 = sigma*sigma;
     pIni->mMaxIterations = iterations;
 }
 
-bool Initializer_Initialize(Initializer *pIni,const Frame &CurrentFrame, const vector<int> &vmatches12, cv::Mat &R21, cv::Mat &t21,
+bool Initializer_Initialize(Initializer *pIni,const Frame *CurrentFrame, const vector<int> &vmatches12, cv::Mat &R21, cv::Mat &t21,
                              vector<cv::Point3f> &vP3D, vector<bool> &vbTriangulated)
 {
     // Fill structures with current keypoints and matches with reference frame
     // Reference Frame: 1, Current Frame: 2
-    pIni->mvKeys2 = CurrentFrame.mvKeysUn;
+    pIni->mvKeys2 = CurrentFrame->mvKeysUn;
 
     pIni->mvmatches12.clear();
     pIni->mvmatches12.reserve(pIni->mvKeys2.size());

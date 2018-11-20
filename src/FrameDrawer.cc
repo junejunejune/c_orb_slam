@@ -169,7 +169,7 @@ void FrameDrawer_Update(FrameDrawer* pFD, Tracking *pTracker)
 {
     unique_lock<mutex> lock(pFD->mMutex);
     pTracker->mImGray.copyTo(pFD->mIm);
-    pFD->mvCurrentKeys=pTracker->mCurrentFrame.mvKeys;
+    pFD->mvCurrentKeys=pTracker->mCurrentFrame->mvKeys;
     pFD->N = pFD->mvCurrentKeys.size();
     pFD->mvbVO = vector<bool>(pFD->N,false);
     pFD->mvbMap = vector<bool>(pFD->N,false);
@@ -178,17 +178,17 @@ void FrameDrawer_Update(FrameDrawer* pFD, Tracking *pTracker)
 
     if(pTracker->mLastProcessedState==Tracking::NOT_INITIALIZED)
     {
-        pFD->mvIniKeys=pTracker->mInitialFrame.mvKeys;
+        pFD->mvIniKeys=pTracker->mInitialFrame->mvKeys;
         pFD->mvIniMatches=pTracker->mvIniMatches;
     }
     else if(pTracker->mLastProcessedState==Tracking::OK)
     {
         for(int i=0;i<pFD->N;i++)
         {
-            MapPoint* pMP = pTracker->mCurrentFrame.mvpMapPoints[i];
+            MapPoint* pMP = pTracker->mCurrentFrame->mvpMapPoints[i];
             if(pMP)
             {
-                if(!pTracker->mCurrentFrame.mvbOutlier[i])
+                if(!pTracker->mCurrentFrame->mvbOutlier[i])
                 {
                     if(MapPoint_Observations(pMP)>0)
                         pFD->mvbMap[i]=true;

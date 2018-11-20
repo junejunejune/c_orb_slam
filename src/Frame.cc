@@ -34,45 +34,45 @@ float Frame::mfGridElementWidthInv, Frame::mfGridElementHeightInv;
 
 
 //Copy Constructor
-void Frame_init_1(Frame* pF,const Frame &frame)
+void Frame_init_1(Frame* pF,const Frame *frame)
 {
-     pF->mpORBvocabulary=frame.mpORBvocabulary;
-     pF->mpORBextractorLeft=frame.mpORBextractorLeft;
-     pF->mpORBextractorRight=frame.mpORBextractorRight;
-     pF->mTimeStamp=frame.mTimeStamp;
-     pF->mK=frame.mK.clone();
-     pF->mDistCoef=frame.mDistCoef.clone();
-     pF->mbf=frame.mbf;
-     pF->mb=frame.mb;
-     pF->mThDepth=frame.mThDepth;
-     pF->N=frame.N;
-     pF->mvKeys=frame.mvKeys;
-     pF->mvKeysRight=frame.mvKeysRight;
-     pF->mvKeysUn=frame.mvKeysUn;  
-     pF->mvuRight=frame.mvuRight;
-     pF->mvDepth=frame.mvDepth;
-     pF->mBowVec=frame.mBowVec;
-     pF->mFeatVec=frame.mFeatVec;
-     pF->mDescriptors=frame.mDescriptors.clone();
-     pF->mDescriptorsRight=frame.mDescriptorsRight.clone();
-     pF->mvpMapPoints=frame.mvpMapPoints;
-     pF->mvbOutlier=frame.mvbOutlier;
-     pF->mnId=frame.mnId;
-     pF->mpReferenceKF=frame.mpReferenceKF;
-     pF->mnScaleLevels=frame.mnScaleLevels;
-     pF->mfScaleFactor=frame.mfScaleFactor;
-     pF->mfLogScaleFactor=frame.mfLogScaleFactor;
-     pF->mvScaleFactors=frame.mvScaleFactors; 
-     pF->mvInvScaleFactors=frame.mvInvScaleFactors;
-     pF->mvLevelSigma2=frame.mvLevelSigma2;
-     pF->mvInvLevelSigma2=frame.mvInvLevelSigma2;
+     pF->mpORBvocabulary=frame->mpORBvocabulary;
+     pF->mpORBextractorLeft=frame->mpORBextractorLeft;
+     pF->mpORBextractorRight=frame->mpORBextractorRight;
+     pF->mTimeStamp=frame->mTimeStamp;
+     pF->mK=frame->mK.clone();
+     pF->mDistCoef=frame->mDistCoef.clone();
+     pF->mbf=frame->mbf;
+     pF->mb=frame->mb;
+     pF->mThDepth=frame->mThDepth;
+     pF->N=frame->N;
+     pF->mvKeys=frame->mvKeys;
+     pF->mvKeysRight=frame->mvKeysRight;
+     pF->mvKeysUn=frame->mvKeysUn;  
+     pF->mvuRight=frame->mvuRight;
+     pF->mvDepth=frame->mvDepth;
+     pF->mBowVec=frame->mBowVec;
+     pF->mFeatVec=frame->mFeatVec;
+     pF->mDescriptors=frame->mDescriptors.clone();
+     pF->mDescriptorsRight=frame->mDescriptorsRight.clone();
+     pF->mvpMapPoints=frame->mvpMapPoints;
+     pF->mvbOutlier=frame->mvbOutlier;
+     pF->mnId=frame->mnId;
+     pF->mpReferenceKF=frame->mpReferenceKF;
+     pF->mnScaleLevels=frame->mnScaleLevels;
+     pF->mfScaleFactor=frame->mfScaleFactor;
+     pF->mfLogScaleFactor=frame->mfLogScaleFactor;
+     pF->mvScaleFactors=frame->mvScaleFactors; 
+     pF->mvInvScaleFactors=frame->mvInvScaleFactors;
+     pF->mvLevelSigma2=frame->mvLevelSigma2;
+     pF->mvInvLevelSigma2=frame->mvInvLevelSigma2;
 
     for(int i=0;i<FRAME_GRID_COLS;i++)
         for(int j=0; j<FRAME_GRID_ROWS; j++)
-            pF->mGrid[i][j]=frame.mGrid[i][j];
+            pF->mGrid[i][j]=frame->mGrid[i][j];
 
-    if(!frame.mTcw.empty())
-        Frame_SetPose(pF, frame.mTcw);
+    if(!frame->mTcw.empty())
+        Frame_SetPose(pF, frame->mTcw);
 }
 
 

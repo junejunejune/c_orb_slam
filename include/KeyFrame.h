@@ -155,7 +155,7 @@ struct KeyFrame
     std::mutex mMutexConnections;
     std::mutex mMutexFeatures;
 };
-    void KeyFrame_init(KeyFrame *pKeyFrame, Frame &F, Map* pMap, KeyFrameDatabase* pKFDB);
+    void KeyFrame_init(KeyFrame *pKeyFrame, Frame *F, Map* pMap, KeyFrameDatabase* pKFDB);
 
     // Pose functions
     void KeyFrame_SetPose(KeyFrame *pKeyFrame,const cv::Mat &Tcw);

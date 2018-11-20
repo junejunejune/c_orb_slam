@@ -56,11 +56,11 @@ struct Initializer
 
 };
     // Fix the reference frame
-    void Initializer_init(Initializer *pIni, const Frame &ReferenceFrame, float sigma = 1.0, int iterations = 200);
+    void Initializer_init(Initializer *pIni, const Frame *ReferenceFrame, float sigma = 1.0, int iterations = 200);
 
     // Computes in parallel a fundamental matrix and a homography
     // Selects a model and tries to recover the motion and the structure from motion
-    bool Initializer_Initialize(Initializer *pIni,const Frame &CurrentFrame, const vector<int> &vmatches12,
+    bool Initializer_Initialize(Initializer *pIni,const Frame *CurrentFrame, const vector<int> &vmatches12,
                     cv::Mat &R21, cv::Mat &t21, vector<cv::Point3f> &vP3D, vector<bool> &vbTriangulated);
 
 
