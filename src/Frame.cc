@@ -92,13 +92,13 @@ void Frame_init_2(Frame* pF,const cv::Mat &imLeft, const cv::Mat &imRight, const
     pF->mnId=pF->nNextId++;
 
     // Scale Level Info
-    pF->mnScaleLevels = pF->mpORBextractorLeft->GetLevels();
-    pF->mfScaleFactor = pF->mpORBextractorLeft->GetScaleFactor();
+    pF->mnScaleLevels = ORBextractor_GetLevels(pF->mpORBextractorLeft);
+    pF->mfScaleFactor = ORBextractor_GetScaleFactor(pF->mpORBextractorLeft);
     pF->mfLogScaleFactor = log(pF->mfScaleFactor);
-    pF->mvScaleFactors = pF->mpORBextractorLeft->GetScaleFactors();
-    pF->mvInvScaleFactors = pF->mpORBextractorLeft->GetInverseScaleFactors();
-    pF->mvLevelSigma2 = pF->mpORBextractorLeft->GetScaleSigmaSquares();
-    pF->mvInvLevelSigma2 = pF->mpORBextractorLeft->GetInverseScaleSigmaSquares();
+    pF->mvScaleFactors = ORBextractor_GetScaleFactors(pF->mpORBextractorLeft);
+    pF->mvInvScaleFactors = ORBextractor_GetInverseScaleFactors(pF->mpORBextractorLeft);
+    pF->mvLevelSigma2 = ORBextractor_GetScaleSigmaSquares(pF->mpORBextractorLeft);
+    pF->mvInvLevelSigma2 = ORBextractor_GetInverseScaleSigmaSquares(pF->mpORBextractorLeft);
 
     // ORB extraction
     thread threadLeft(&Frame_ExtractORB,pF,0,imLeft);
@@ -157,13 +157,13 @@ void Frame_init_3(Frame* pF,const cv::Mat &imGray, const cv::Mat &imDepth, const
     pF->mnId=pF->nNextId++;
 
     // Scale Level Info
-    pF->mnScaleLevels = pF->mpORBextractorLeft->GetLevels();
-    pF->mfScaleFactor = pF->mpORBextractorLeft->GetScaleFactor();    
+    pF->mnScaleLevels = ORBextractor_GetLevels(pF->mpORBextractorLeft);
+    pF->mfScaleFactor = ORBextractor_GetScaleFactor(pF->mpORBextractorLeft);    
     pF->mfLogScaleFactor = log(pF->mfScaleFactor);
-    pF->mvScaleFactors = pF->mpORBextractorLeft->GetScaleFactors();
-    pF->mvInvScaleFactors = pF->mpORBextractorLeft->GetInverseScaleFactors();
-    pF->mvLevelSigma2 = pF->mpORBextractorLeft->GetScaleSigmaSquares();
-    pF->mvInvLevelSigma2 = pF->mpORBextractorLeft->GetInverseScaleSigmaSquares();
+    pF->mvScaleFactors = ORBextractor_GetScaleFactors(pF->mpORBextractorLeft);
+    pF->mvInvScaleFactors = ORBextractor_GetInverseScaleFactors(pF->mpORBextractorLeft);
+    pF->mvLevelSigma2 = ORBextractor_GetScaleSigmaSquares(pF->mpORBextractorLeft);
+    pF->mvInvLevelSigma2 = ORBextractor_GetInverseScaleSigmaSquares(pF->mpORBextractorLeft);
 
     // ORB extraction
     Frame_ExtractORB(pF,0,imGray);
@@ -219,13 +219,13 @@ void Frame_init_4(Frame* pF,const cv::Mat &imGray, const double &timeStamp, ORBe
     pF->mnId=pF->nNextId++;
 
     // Scale Level Info
-    pF->mnScaleLevels = pF->mpORBextractorLeft->GetLevels();
-    pF->mfScaleFactor = pF->mpORBextractorLeft->GetScaleFactor();
+    pF->mnScaleLevels = ORBextractor_GetLevels(pF->mpORBextractorLeft);
+    pF->mfScaleFactor = ORBextractor_GetScaleFactor(pF->mpORBextractorLeft);
     pF->mfLogScaleFactor = log(pF->mfScaleFactor);
-    pF->mvScaleFactors = pF->mpORBextractorLeft->GetScaleFactors();
-    pF->mvInvScaleFactors = pF->mpORBextractorLeft->GetInverseScaleFactors();
-    pF->mvLevelSigma2 = pF->mpORBextractorLeft->GetScaleSigmaSquares();
-    pF->mvInvLevelSigma2 = pF->mpORBextractorLeft->GetInverseScaleSigmaSquares();
+    pF->mvScaleFactors = ORBextractor_GetScaleFactors(pF->mpORBextractorLeft);
+    pF->mvInvScaleFactors = ORBextractor_GetInverseScaleFactors(pF->mpORBextractorLeft);
+    pF->mvLevelSigma2 = ORBextractor_GetScaleSigmaSquares(pF->mpORBextractorLeft);
+    pF->mvInvLevelSigma2 = ORBextractor_GetInverseScaleSigmaSquares(pF->mpORBextractorLeft);
 
     // ORB extraction
     Frame_ExtractORB(pF,0,imGray);
@@ -286,10 +286,16 @@ void Frame_AssignFeaturesToGrid(Frame* pF)
 
 void Frame_ExtractORB(Frame* pF,int flag, const cv::Mat &im)
 {
-    if(flag==0)
-        (*pF->mpORBextractorLeft)(im,cv::Mat(),pF->mvKeys,pF->mDescriptors);
+    /*if(flag==0)
+        (*pF->mpORBextractorLeft,im,cv::Mat(),pF->mvKeys,pF->mDescriptors);
     else
-        (*pF->mpORBextractorRight)(im,cv::Mat(),pF->mvKeysRight,pF->mDescriptorsRight);
+        (*pF->mpORBextractorRight,im,cv::Mat(),pF->mvKeysRight,pF->mDescriptorsRight);
+    */
+    if(flag==0)
+        ORBextractor_operator(pF->mpORBextractorLeft,im,cv::Mat(),pF->mvKeys,pF->mDescriptors);
+    else
+        ORBextractor_operator(pF->mpORBextractorRight,im,cv::Mat(),pF->mvKeysRight,pF->mDescriptorsRight);
+    
 }
 
 void Frame_SetPose(Frame* pF,cv::Mat Tcw)
