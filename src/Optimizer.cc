@@ -233,7 +233,6 @@ void Optimizer_BundleAdjustment(const vector<KeyFrame *> &vpKFs, const vector<Ma
             pMP->mnBAGlobalForKF = nLoopKF;
         }
     }
-
 }
 
 int Optimizer_PoseOptimization(Frame *pFrame)
@@ -272,7 +271,6 @@ int Optimizer_PoseOptimization(Frame *pFrame)
 
     const float deltaMono = sqrt(5.991);
     const float deltaStereo = sqrt(7.815);
-
 
     {
     unique_lock<mutex> lock(MapPoint::mGlobalMutex);
@@ -356,10 +354,8 @@ int Optimizer_PoseOptimization(Frame *pFrame)
                 vnIndexEdgeStereo.push_back(i);
             }
         }
-
     }
     }
-
 
     if(nInitialCorrespondences<3)
         return 0;
@@ -702,10 +698,8 @@ void Optimizer_LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap)
     }
 
     // Optimize again without the outliers
-
     optimizer.initializeOptimization(0);
     optimizer.optimize(10);
-
     }
 
     vector<pair<KeyFrame*,MapPoint*> > vToErase;
@@ -757,7 +751,6 @@ void Optimizer_LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap)
     }
 
     // Recover optimized data
-
     //Keyframes
     for(list<KeyFrame*>::iterator lit=lLocalKeyFrames.begin(), lend=lLocalKeyFrames.end(); lit!=lend; lit++)
     {
@@ -776,7 +769,6 @@ void Optimizer_LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap)
         MapPoint_UpdateNormalAndDepth(pMP);
     }
 }
-
 
 void Optimizer_OptimizeEssentialGraph(Map* pMap, KeyFrame* pLoopKF, KeyFrame* pCurKF,
                                        const LoopClosing::KeyFrameAndPose &NonCorrectedSim3,
@@ -842,7 +834,6 @@ void Optimizer_OptimizeEssentialGraph(Map* pMap, KeyFrame* pLoopKF, KeyFrame* pC
 
         vpVertices[nIDi]=VSim3;
     }
-
 
     set<pair<long unsigned int,long unsigned int> > sInsertedEdges;
 

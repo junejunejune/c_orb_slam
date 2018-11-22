@@ -33,7 +33,6 @@ namespace ORB_SLAM2
 
 struct MapDrawer
 {
-
     Map* mpMap;
 
     float mKeyFrameSize;
@@ -49,7 +48,6 @@ struct MapDrawer
 };
 
     void MapDrawer_init(MapDrawer* pMD, Map* pMap, const string &strSettingPath);
-
     void MapDrawer_DrawMapPoints(MapDrawer* pMD);
     void MapDrawer_DrawKeyFrames(MapDrawer* pMD, const bool bDrawKF, const bool bDrawGraph);
     void MapDrawer_DrawCurrentCamera(MapDrawer* pMD, pangolin::OpenGlMatrix &Twc);

@@ -31,6 +31,7 @@
 
 namespace ORB_SLAM2
 {
+
 struct Sim3Solver
 {
     // KeyFrames and matches
@@ -96,6 +97,7 @@ struct Sim3Solver
     cv::Mat mK1;
     cv::Mat mK2;
 };
+
     void Sim3Solver_init(Sim3Solver* mpSim3Solver,KeyFrame* pKF1, KeyFrame* pKF2, const std::vector<MapPoint*> &vpMatched12, const bool bFixScale = true);
 
     void Sim3Solver_SetRansacParameters(Sim3Solver* mpSim3Solver,double probability = 0.99, int minInliers = 6 , int maxIterations = 300);

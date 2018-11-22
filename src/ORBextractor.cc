@@ -62,7 +62,6 @@
 
 #include "ORBextractor.h"
 
-
 using namespace cv;
 using namespace std;
 
@@ -72,7 +71,6 @@ namespace ORB_SLAM2
 const int PATCH_SIZE = 31;
 const int HALF_PATCH_SIZE = 15;
 const int EDGE_THRESHOLD = 19;
-
 
 static float IC_Angle(const Mat& image, Point2f pt,  const vector<int> & u_max)
 {
@@ -102,7 +100,6 @@ static float IC_Angle(const Mat& image, Point2f pt,  const vector<int> & u_max)
 
     return fastAtan2((float)m_01, (float)m_10);
 }
-
 
 const float factorPI = (float)(CV_PI/180.f);
 static void computeOrbDescriptor(const KeyPoint& kpt,
@@ -145,7 +142,6 @@ static void computeOrbDescriptor(const KeyPoint& kpt,
 
     #undef GET_VALUE
 }
-
 
 static int bit_pattern_31_[256*4] =
 {
@@ -988,9 +984,7 @@ void ORBextractor_ComputeKeyPointsOld(ORBextractor* mpORBe,std::vector<std::vect
             }
         }
 
-
         // Retain by score
-
         while(nToDistribute>0 && nNoMore<nCells)
         {
             int nNewFeaturesCell = nfeaturesCell + ceil((float)nToDistribute/(nCells-nNoMore));

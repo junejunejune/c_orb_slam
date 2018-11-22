@@ -446,6 +446,4 @@ int MapPoint_PredictScale(MapPoint* pMPT,const float &currentDist, Frame* pF)
     return nScale;
 }
 
-
-
 } //namespace ORB_SLAM

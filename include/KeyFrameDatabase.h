@@ -36,29 +36,10 @@ namespace ORB_SLAM2
 {
 
 struct KeyFrame;
-class Frame;
+struct Frame;
 
-
-class KeyFrameDatabase
+struct KeyFrameDatabase
 {
-public:
-
-    KeyFrameDatabase(const ORBVocabulary &voc);
-
-   void add(KeyFrame* pKF);
-
-   void erase(KeyFrame* pKF);
-
-   void clear();
-
-   // Loop Detection
-   std::vector<KeyFrame *> DetectLoopCandidates(KeyFrame* pKF, float minScore);
-
-   // Relocalization
-   std::vector<KeyFrame*> DetectRelocalizationCandidates(Frame* F);
-
-protected:
-
   // Associated vocabulary
   const ORBVocabulary* mpVoc;
 
@@ -68,6 +49,21 @@ protected:
   // Mutex
   std::mutex mMutex;
 };
+  
+   void KeyFrameDatabase_init(KeyFrameDatabase* pKFD,const ORBVocabulary &voc);
+
+   void KeyFrameDatabase_add(KeyFrameDatabase* pKFD,KeyFrame* pKF);
+
+   void KeyFrameDatabase_erase(KeyFrameDatabase* pKFD,KeyFrame* pKF);
+
+   void KeyFrameDatabase_clear(KeyFrameDatabase* pKFD);
+
+   // Loop Detection
+   std::vector<KeyFrame *> KeyFrameDatabase_DetectLoopCandidates(KeyFrameDatabase* pKFD,KeyFrame* pKF, float minScore);
+
+   // Relocalization
+   std::vector<KeyFrame*> KeyFrameDatabase_DetectRelocalizationCandidates(KeyFrameDatabase* pKFD,Frame* F);
+
 
 } //namespace ORB_SLAM
 

@@ -36,6 +36,7 @@ struct ExtractorNode
     std::list<ExtractorNode>::iterator lit;
     bool bNoMore;
 };
+
 void ExtractorNode_init(ExtractorNode* pEN);
 
 void ExtractorNode_DivideNode(ExtractorNode* pEN,ExtractorNode &n1, ExtractorNode &n2, ExtractorNode &n3, ExtractorNode &n4);
@@ -43,12 +44,11 @@ void ExtractorNode_DivideNode(ExtractorNode* pEN,ExtractorNode &n1, ExtractorNod
 
 struct ORBextractor
 {
-
     enum {HARRIS_SCORE=0, FAST_SCORE=1 };
 
     std::vector<cv::Mat> mvImagePyramid;
 
-   std::vector<cv::Point> pattern;
+    std::vector<cv::Point> pattern;
 
     int nfeatures;
     double scaleFactor;
@@ -65,6 +65,7 @@ struct ORBextractor
     std::vector<float> mvLevelSigma2;
     std::vector<float> mvInvLevelSigma2;
 };
+
     void ORBextractor_init(ORBextractor* mpORBe, int nfeatures, float scaleFactor, int nlevels,
                  int iniThFAST, int minThFAST);
 

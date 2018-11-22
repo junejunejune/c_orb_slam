@@ -33,11 +33,7 @@ using namespace std;
 
 namespace ORB_SLAM2
 {
-/*
-const int ORBmatcher->TH_HIGH = 100;
-const int ORBmatcher->TH_LOW = 50;
-const int ORBmatcher->HISTO_LENGTH = 30;
-*/
+
 void ORBmatcher_init(ORBmatcher* mpORBmatcher, float nnratio, bool checkOri)
 { 
 
@@ -128,7 +124,6 @@ int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame *F, const vecto
             nmatches++;
         }
     }
-
     return nmatches;
 }
 
@@ -251,9 +246,7 @@ int ORBmatcher_SearchByBoW(ORBmatcher* mpORBmatcher,KeyFrame* pKF,Frame* F, vect
                         nmatches++;
                     }
                 }
-
             }
-
             KFit++;
             Fit++;
         }
@@ -266,7 +259,6 @@ int ORBmatcher_SearchByBoW(ORBmatcher* mpORBmatcher,KeyFrame* pKF,Frame* F, vect
             Fit = F->mFeatVec.lower_bound(KFit->first);
         }
     }
-
 
     if(mpORBmatcher->mbCheckOrientation)
     {
@@ -287,7 +279,6 @@ int ORBmatcher_SearchByBoW(ORBmatcher* mpORBmatcher,KeyFrame* pKF,Frame* F, vect
             }
         }
     }
-
     return nmatches;
 }
 
@@ -400,9 +391,7 @@ int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,KeyFrame* pKF, cv::Ma
             vpMatched[bestIdx]=pMP;
             nmatches++;
         }
-
     }
-
     return nmatches;
 }
 
@@ -487,7 +476,6 @@ int ORBmatcher_SearchForInitialization(ORBmatcher* mpORBmatcher,Frame *F1, Frame
                 }
             }
         }
-
     }
 
     if(mpORBmatcher->mbCheckOrientation)
@@ -512,7 +500,6 @@ int ORBmatcher_SearchForInitialization(ORBmatcher* mpORBmatcher,Frame *F1, Frame
                 }
             }
         }
-
     }
 
     //Update prev matched
@@ -778,7 +765,6 @@ int ORBmatcher_SearchForTriangulation(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, K
                     }
                 }
             }
-
             f1it++;
             f2it++;
         }
@@ -810,9 +796,7 @@ int ORBmatcher_SearchForTriangulation(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, K
                 nmatches--;
             }
         }
-
     }
-
     vMatchedPairs.clear();
     vMatchedPairs.reserve(nmatches);
 
@@ -822,7 +806,6 @@ int ORBmatcher_SearchForTriangulation(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, K
             continue;
         vMatchedPairs.push_back(make_pair(i,vMatches12[i]));
     }
-
     return nmatches;
 }
 
@@ -974,7 +957,6 @@ int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, const vector<MapPoin
             nFused++;
         }
     }
-
     return nFused;
 }
 
@@ -1099,7 +1081,6 @@ int ORBmatcher_Fuse(ORBmatcher* mpORBmatcher,KeyFrame *pKF, cv::Mat Scw, const v
             nFused++;
         }
     }
-
     return nFused;
 }
 
@@ -1325,7 +1306,6 @@ int ORBmatcher_SearchBySim3(ORBmatcher* mpORBmatcher,KeyFrame *pKF1, KeyFrame *p
             }
         }
     }
-
     return nFound;
 }
 
@@ -1469,7 +1449,6 @@ int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame *CurrentFrame, 
             }
         }
     }
-
     return nmatches;
 }
 
@@ -1573,7 +1552,6 @@ int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame *CurrentFrame, 
                         rotHist[bin].push_back(bestIdx2);
                     }
                 }
-
             }
         }
     }
@@ -1598,7 +1576,6 @@ int ORBmatcher_SearchByProjection(ORBmatcher* mpORBmatcher,Frame *CurrentFrame, 
             }
         }
     }
-
     return nmatches;
 }
 
@@ -1662,7 +1639,6 @@ int ORBmatcher_DescriptorDistance(const cv::Mat &a, const cv::Mat &b)
         v = (v & 0x33333333) + ((v >> 2) & 0x33333333);
         dist += (((v + (v >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;
     }
-
     return dist;
 }
 

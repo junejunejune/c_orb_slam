@@ -498,7 +498,6 @@ void LocalMapping_SearchInNeighbors(LocalMapping* pLM)
 
 
     // Search matches by projection from current KF in target KFs
-    //ORBmatcher matcher;
     struct ORBmatcher sORBmatcher;
     ORBmatcher *matcher = &sORBmatcher;
     ORBmatcher_init(matcher, 0.9, true);          

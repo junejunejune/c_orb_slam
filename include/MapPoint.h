@@ -32,9 +32,8 @@ namespace ORB_SLAM2
 {
 
 struct KeyFrame;
-class Map;
-class Frame;
-
+struct Map;
+struct Frame;
 
 struct MapPoint
 {
@@ -99,6 +98,7 @@ struct MapPoint
      std::mutex mMutexPos;
      std::mutex mMutexFeatures;
 };
+
     void MapPoint_init_1(MapPoint* pMPT,const cv::Mat &Pos, KeyFrame* pRefKF, Map* pMap);
     void MapPoint_init_2(MapPoint* pMPT,const cv::Mat &Pos,  Map* pMap, Frame* pFrame, const int &idxF);
 

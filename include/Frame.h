@@ -37,7 +37,7 @@ namespace ORB_SLAM2
 #define FRAME_GRID_ROWS 48
 #define FRAME_GRID_COLS 64
 
-class MapPoint;
+struct MapPoint;
 struct KeyFrame;
 
 struct Frame
@@ -136,6 +136,7 @@ struct Frame
     cv::Mat mRwc;
     cv::Mat mOw; //==mtwc
 };
+
     // Copy constructor.
     void Frame_init_1(Frame* pF,const Frame *frame);
 

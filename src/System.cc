@@ -30,6 +30,7 @@ namespace ORB_SLAM2
 
 struct FrameDrawer sFD;
 struct MapDrawer sMD;
+
 void System_init(System *pSystem, const string &strVocFile, const string &strSettingsFile, const System::eSensor sensor,
                const bool bUseViewer)
 {
@@ -79,18 +80,15 @@ void System_init(System *pSystem, const string &strVocFile, const string &strSet
     cout << "Vocabulary loaded!" << endl << endl;
 
     //Create KeyFrame Database
-    pSystem->mpKeyFrameDatabase = new KeyFrameDatabase(*(pSystem->mpVocabulary));
+    pSystem->mpKeyFrameDatabase = new KeyFrameDatabase;
+    KeyFrameDatabase_init(pSystem->mpKeyFrameDatabase,*(pSystem->mpVocabulary));
     //Create the Map
     pSystem->mpMap = new Map();
  
     //Create Drawers. These are used by the Viewer
-    //mpFrameDrawer = new FrameDrawer(mpMap);
-   // struct FrameDrawer sFD;
     pSystem->mpFrameDrawer = &sFD;
     FrameDrawer_init(pSystem->mpFrameDrawer, pSystem->mpMap);
 
-   // mpMapDrawer = new MapDrawer(mpMap, strSettingsFile);
-//    struct MapDrawer sMD;
     pSystem->mpMapDrawer = &sMD;
     MapDrawer_init(pSystem->mpMapDrawer, pSystem->mpMap, strSettingsFile);
 
@@ -113,12 +111,9 @@ void System_init(System *pSystem, const string &strVocFile, const string &strSet
     //Initialize the Viewer thread and launch
     if(bUseViewer)
     {
-      //  struct Viewer sViewer;
-      //  Viewer *mpViewer = &sViewer;
-      //  Viewer_init(mpViewer,this, mpFrameDrawer,mpMapDrawer,mpTracker,strSettingsFile);
         pSystem->mpViewer = new Viewer;
         Viewer_init(pSystem->mpViewer,pSystem, pSystem->mpFrameDrawer,pSystem->mpMapDrawer,pSystem->mpTracker,strSettingsFile);
-      //  mptViewer = new thread(&Viewer_Run, mpViewer);
+        
         pSystem->mptViewer = new thread(&Viewer_Run, pSystem->mpViewer);
         Tracking_SetViewer(pSystem->mpTracker,pSystem->mpViewer);
     }

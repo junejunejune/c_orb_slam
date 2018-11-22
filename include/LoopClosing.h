@@ -36,10 +36,9 @@
 namespace ORB_SLAM2
 {
 
-class Tracking;
-class LocalMapping;
-class KeyFrameDatabase;
-
+struct Tracking;
+struct LocalMapping;
+struct KeyFrameDatabase;
 
 struct LoopClosing
 {
@@ -48,10 +47,10 @@ struct LoopClosing
         Eigen::aligned_allocator<std::pair<const KeyFrame*, g2o::Sim3> > > KeyFrameAndPose;
 
 
-   bool mbResetRequested;
+    bool mbResetRequested;
     std::mutex mMutexReset;
 
-   bool mbFinishRequested;
+    bool mbFinishRequested;
     bool mbFinished;
     std::mutex mMutexFinish;
 
@@ -92,10 +91,9 @@ struct LoopClosing
 
     // Fix scale in the stereo/RGB-D case
     bool mbFixScale;
-
-
     bool mnFullBAIdx;
 };
+
     void LoopClosing_init(LoopClosing* pLC,Map* pMap, KeyFrameDatabase* pDB, ORBVocabulary* pVoc,const bool bFixScale);
 
     void LoopClosing_SetTracker(LoopClosing* pLC,Tracking* pTracker);

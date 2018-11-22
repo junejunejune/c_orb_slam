@@ -39,13 +39,10 @@ static int HISTO_LENGTH=30;
 
 struct ORBmatcher
 {    
-//    int TH_LOW=100;
-//    int TH_HIGH=50;
-//    int HISTO_LENGTH=30;
-
     float mfNNratio;
     bool mbCheckOrientation;
 };
+
     void ORBmatcher_init(ORBmatcher* mpORBmatcher, float nnratio=0.6, bool checkOri=true);
 
     // Computes the Hamming distance between two ORB descriptors

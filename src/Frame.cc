@@ -32,7 +32,6 @@ float Frame::cx, Frame::cy, Frame::fx, Frame::fy, Frame::invfx, Frame::invfy;
 float Frame::mnMinX, Frame::mnMinY, Frame::mnMaxX, Frame::mnMaxY;
 float Frame::mfGridElementWidthInv, Frame::mfGridElementHeightInv;
 
-
 //Copy Constructor
 void Frame_init_1(Frame* pF,const Frame *frame)
 {

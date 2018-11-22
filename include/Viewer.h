@@ -31,11 +31,10 @@
 
 namespace ORB_SLAM2
 {
-
-class Tracking;
-class FrameDrawer;
-class MapDrawer;
-class System;
+struct Tracking;
+struct FrameDrawer;
+struct MapDrawer;
+struct System;
 
 struct Viewer
 {
@@ -59,28 +58,27 @@ struct Viewer
     std::mutex mMutexStop;
 
 };
-    void Viewer_init(Viewer* pViewer, System* pSystem, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Tracking *pTracking, const string &strSettingPath);
 
+    void Viewer_init(Viewer* pViewer, System* pSystem, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Tracking *pTracking, const string &strSettingPath);
     // Main thread function. Draw points, keyframes, the current camera pose and the last processed
     // frame. Drawing is refreshed according to the camera fps. We use Pangolin.
     void Viewer_Run(Viewer* pViewer);
-
+    
     void Viewer_RequestFinish(Viewer* pViewer);
-
+    
     void Viewer_RequestStop(Viewer* pViewer);
-
+    
     bool Viewer_isFinished(Viewer* pViewer);
-
+    
     bool Viewer_isStopped(Viewer* pViewer);
-
+    
     void Viewer_Release(Viewer* pViewer);
-
+    
     bool Viewer_Stop(Viewer* pViewer);
-
+    
     bool Viewer_CheckFinish(Viewer* pViewer);
-
+    
     void Viewer_SetFinish(Viewer* pViewer);
- 
 }
 
 

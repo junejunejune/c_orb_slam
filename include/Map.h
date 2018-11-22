@@ -32,7 +32,7 @@
 namespace ORB_SLAM2
 {
 
-class MapPoint;
+struct MapPoint;
 struct KeyFrame;
 
 struct Map
@@ -56,6 +56,7 @@ struct Map
 
     std::mutex mMutexMap;
 };
+
     void Map_init(Map *pMap);
 
     void Map_AddKeyFrame(Map *pMap, KeyFrame* pKF);
@@ -76,8 +77,6 @@ struct Map
     long unsigned int Map_GetMaxKFid(Map *pMap);
 
     void Map_clear(Map *pMap);
-
-
 } //namespace ORB_SLAM
 
 #endif // MAP_H

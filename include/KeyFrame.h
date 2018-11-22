@@ -35,14 +35,13 @@
 namespace ORB_SLAM2
 {
 
-class Map;
-class MapPoint;
-class Frame;
-class KeyFrameDatabase;
+struct Map;
+struct MapPoint;
+struct Frame;
+struct KeyFrameDatabase;
 
 struct KeyFrame
 {
-
     // The following variables are accesed from only 1 thread or never change (no mutex needed).
     static long unsigned int nNextId;
     long unsigned int mnId;
@@ -112,9 +111,7 @@ struct KeyFrame
     int mnMaxY;
     cv::Mat mK;
 
-
     // The following variables need to be accessed trough a mutex to be thread safe.
-
     // SE3 Pose and camera center
     cv::Mat Tcw;
     cv::Mat Twc;
@@ -155,6 +152,7 @@ struct KeyFrame
     std::mutex mMutexConnections;
     std::mutex mMutexFeatures;
 };
+    
     void KeyFrame_init(KeyFrame *pKeyFrame, Frame *F, Map* pMap, KeyFrameDatabase* pKFDB);
 
     // Pose functions
@@ -223,7 +221,6 @@ struct KeyFrame
     bool KeyFrame_weightComp( int a, int b);
 
     bool KeyFrame_lId(KeyFrame* pKF1, KeyFrame* pKF2);
-
 
 } //namespace ORB_SLAM
 

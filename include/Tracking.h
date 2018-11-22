@@ -44,16 +44,14 @@ namespace ORB_SLAM2
 {
 
 struct Viewer;
-class FrameDrawer;
-class Map;
-class LocalMapping;
-class LoopClosing;
-class System;
+struct FrameDrawer;
+struct Map;
+struct LocalMapping;
+struct LoopClosing;
+struct System;
 
 struct Tracking
 {  
-
-
     // Tracking states
     enum eTrackingState{
         SYSTEM_NOT_READY=-1,
@@ -161,6 +159,7 @@ struct Tracking
 
     list<MapPoint*> mlpTemporalPoints;
 };
+
     void Tracking_init(Tracking* pTr, System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Map* pMap,
              KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor);
 

@@ -42,9 +42,9 @@ namespace ORB_SLAM2
 struct Viewer;
 struct FrameDrawer;
 struct Map;
-class Tracking;
-class LocalMapping;
-class LoopClosing;
+struct Tracking;
+struct LocalMapping;
+struct LoopClosing;
 
 struct System
 {
@@ -106,6 +106,7 @@ struct System
     std::vector<cv::KeyPoint> mTrackedKeyPointsUn;
     std::mutex mMutexState;
 };
+
     // Initialize the SLAM system. It launches the Local Mapping, Loop Closing and Viewer threads.
     void System_init(System *pSystem,const string &strVocFile, const string &strSettingsFile, const System::eSensor sensor, const bool bUseViewer = true);
 
@@ -169,8 +170,6 @@ struct System
     int System_GetTrackingState(System *pSystem);
     std::vector<MapPoint*> System_GetTrackedMapPoints(System *pSystem);
     std::vector<cv::KeyPoint> System_GetTrackedKeyPointsUn(System *pSystem);
-
-
 }// namespace ORB_SLAM
 
 #endif // SYSTEM_H

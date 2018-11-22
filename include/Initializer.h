@@ -65,9 +65,11 @@ struct Initializer
 
 
     void Initializer_FindHomography(Initializer *pIni,vector<bool> &vbmatchesInliers, float &score, cv::Mat &H21);
+
     void Initializer_FindFundamental(Initializer *pIni,vector<bool> &vbInliers, float &score, cv::Mat &F21);
 
     cv::Mat Initializer_ComputeH21(Initializer *pIni,const vector<cv::Point2f> &vP1, const vector<cv::Point2f> &vP2);
+    
     cv::Mat Initializer_ComputeF21(Initializer *pIni,const vector<cv::Point2f> &vP1, const vector<cv::Point2f> &vP2);
 
     float Initializer_CheckHomography(Initializer *pIni,const cv::Mat &H21, const cv::Mat &H12, vector<bool> &vbmatchesInliers, float sigma);

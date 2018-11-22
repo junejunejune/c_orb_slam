@@ -63,7 +63,6 @@ using namespace std;
 namespace ORB_SLAM2
 {
 
-
 void PnPsolver_init(PnPsolver* nPnP,const Frame *F, const vector<MapPoint*> &vpMapPointMatches)
 {    
     nPnP->pws=0;
@@ -134,9 +133,7 @@ void PnPsolver_SetRansacParameters(PnPsolver* pPnP, double probability, int minI
     pPnP->mRansacMaxIts = maxIterations;
     pPnP->mRansacEpsilon = epsilon;
     pPnP->mRansacMinSet = minSet;
-
     pPnP->N = pPnP->mvP2D.size(); // number of correspondences
-
     pPnP->mvbInliersi.resize(pPnP->N);
 
     // Adjust Parameters according to number of correspondences
@@ -262,7 +259,6 @@ cv::Mat PnPsolver_iterate(PnPsolver* pPnP,int nIterations, bool &bNoMore, vector
             return pPnP->mBestTcw.clone();
         }
     }
-
     return cv::Mat();
 }
 
@@ -309,7 +305,6 @@ bool PnPsolver_Refine(PnPsolver* pPnP)
         tcw.copyTo(pPnP->mRefinedTcw.rowRange(0,3).col(3));
         return true;
     }
-
     return false;
 }
 
@@ -346,7 +341,6 @@ void PnPsolver_CheckInliers(PnPsolver* pPnP)
         }
     }
 }
-
 
 void PnPsolver_set_maximum_number_of_correspondences(PnPsolver* pPnP, int n)
 {

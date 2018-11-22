@@ -34,12 +34,11 @@
 namespace ORB_SLAM2
 {
 
-class Tracking;
-class Viewer;
+struct Tracking;
+struct Viewer;
 
 struct FrameDrawer
 {
-
     // Info of the frame to be drawn
     cv::Mat mIm;
     int N;
@@ -55,6 +54,7 @@ struct FrameDrawer
 
     std::mutex mMutex;
 };
+ 
     void FrameDrawer_init(FrameDrawer* pFD, Map* pMap);
     // Update info from the last processed frame.
     void FrameDrawer_Update(FrameDrawer* pFD, Tracking *pTracker);

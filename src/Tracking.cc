@@ -43,11 +43,8 @@ using namespace std;
 namespace ORB_SLAM2
 {
 
-//    struct KeyFrame spKFcur;
-//    struct KeyFrame spKFini;
 void Tracking_init(Tracking* pTr,System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer, Map *pMap, KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor)
 {  
-  
     pTr->mState=Tracking::NO_IMAGES_YET; 
     pTr->mSensor=sensor;
     pTr->mbOnlyTracking=false; 
@@ -123,7 +120,6 @@ void Tracking_init(Tracking* pTr,System *pSys, ORBVocabulary* pVoc, FrameDrawer 
         cout << "- color order: BGR (ignored if grayscale)" << endl;
 
     // Load ORB parameters
-
     int nFeatures = fSettings["ORBextractor.nFeatures"];
     float fScaleFactor = fSettings["ORBextractor.scaleFactor"];
     int nLevels = fSettings["ORBextractor.nLevels"];
@@ -165,7 +161,6 @@ void Tracking_init(Tracking* pTr,System *pSys, ORBVocabulary* pVoc, FrameDrawer 
         else
             pTr->mDepthMapFactor = 1.0f/pTr->mDepthMapFactor;
     }
-
 }
 
 void Tracking_SetLocalMapper(Tracking* pTr,LocalMapping *pLocalMapper)
@@ -530,7 +525,6 @@ void Tracking_Track(Tracking* pTr)
         pTr->mlFrameTimes.push_back(pTr->mlFrameTimes.back());
         pTr->mlbLost.push_back(pTr->mState==Tracking::LOST);
     }
-
 }
 
 
@@ -542,8 +536,6 @@ void Tracking_StereoInitialization(Tracking* pTr)
         Frame_SetPose(pTr->mCurrentFrame,cv::Mat::eye(4,4,CV_32F));
 
         // Create KeyFrame
-       // KeyFrame* pKFini = new KeyFrame(mCurrentFrame,mpMap,mpKeyFrameDB);
-        //struct KeyFrame* pKFini =(KeyFrame*)malloc(sizeof(struct KeyFrame));
         struct KeyFrame* pKFini = new struct KeyFrame();
         KeyFrame_init(pKFini, pTr->mCurrentFrame, pTr->mpMap, pTr->mpKeyFrameDB);
 
@@ -612,7 +604,6 @@ void Tracking_MonocularInitialization(Tracking* pTr)
             if(pTr->mpInitializer)
                 delete pTr->mpInitializer;
 
-           // mpInitializer =  new Initializer(mCurrentFrame,1.0,200);
             pTr->mpInitializer= new Initializer;
             Initializer_init(pTr->mpInitializer, pTr->mCurrentFrame,1.0,200);
 
@@ -633,10 +624,6 @@ void Tracking_MonocularInitialization(Tracking* pTr)
         }
 
         // Find correspondences
-        // ORBmatcher matcher(0.9,true);
-       // struct ORBmatcher sORBmatcher;
-       // ORBmatcher *matcher = &sORBmatcher;
-       // ORBmatcher_init(matcher, 0.9, true);          
         ORBmatcher* matcher = new ORBmatcher();
         ORBmatcher_init(matcher, 0.9, true);
 
@@ -679,22 +666,11 @@ void Tracking_MonocularInitialization(Tracking* pTr)
 void Tracking_CreateInitialMapMonocular(Tracking* pTr)
 {
     // Create KeyFrames
-   // KeyFrame* pKFini = new KeyFrame(mInitialFrame,mpMap,mpKeyFrameDB);
-   // KeyFrame* pKFcur = new KeyFrame(mCurrentFrame,mpMap,mpKeyFrameDB);
-   // struct KeyFrame *pKFini = (struct KeyFrame*)malloc(sizeof(struct KeyFrame));
     struct KeyFrame* pKFini =new struct KeyFrame();
     KeyFrame_init(pKFini, pTr->mInitialFrame, pTr->mpMap, pTr->mpKeyFrameDB);
 
-   // struct KeyFrame *pKFcur = (struct KeyFrame*)malloc(sizeof(struct KeyFrame));
     struct KeyFrame* pKFcur =new struct KeyFrame();
     KeyFrame_init(pKFcur, pTr->mCurrentFrame, pTr->mpMap, pTr->mpKeyFrameDB);
-//    struct KeyFrame spKFini;
-//    KeyFrame* pKFini = &spKFini;
-//    KeyFrame_init(pKFini, mInitialFrame, mpMap, mpKeyFrameDB);
-
-//    struct KeyFrame spKFcur;
-//    KeyFrame* pKFcur = &spKFcur;
-//    KeyFrame_init(pKFcur, mInitialFrame, mpMap, mpKeyFrameDB);
 
 
     KeyFrame_ComputeBoW(pKFini);
@@ -820,10 +796,6 @@ bool Tracking_TrackReferenceKeyFrame(Tracking* pTr)
 
     // We perform first an ORB matching with the reference keyframe
     // If enough matches are found we setup a PnP solver
-    //ORBmatcher matcher(0.7,true);
-   // struct ORBmatcher sORBmatcher;
-   // ORBmatcher *matcher = &sORBmatcher;
-   // ORBmatcher_init(matcher, 0.7, true);          
      ORBmatcher* matcher = new ORBmatcher();
      ORBmatcher_init(matcher, 0.7, true);
    
@@ -859,7 +831,6 @@ bool Tracking_TrackReferenceKeyFrame(Tracking* pTr)
                 nmatchesMap++;
         }
     }
-
     return nmatchesMap>=10;
 }
 
@@ -932,10 +903,6 @@ void Tracking_UpdateLastFrame(Tracking* pTr)
 
 bool Tracking_TrackWithMotionModel(Tracking* pTr)
 {
- //   ORBmatcher matcher(0.9,true);
-   // struct ORBmatcher sORBmatcher;
-   // ORBmatcher *matcher = &sORBmatcher;
-   // ORBmatcher_init(matcher, 0.9, true);          
     ORBmatcher* matcher=new ORBmatcher();
     ORBmatcher_init(matcher, 0.9, true);
 
@@ -994,7 +961,6 @@ bool Tracking_TrackWithMotionModel(Tracking* pTr)
         pTr->mbVO = nmatchesMap<10;
         return nmatches>20;
     }
-
     return nmatchesMap>=10;
 }
 
@@ -1002,7 +968,6 @@ bool Tracking_TrackLocalMap(Tracking* pTr)
 {
     // We have an estimation of the camera pose and some map points tracked in the frame.
     // We retrieve the local map and try to find matches to points in the local map.
-
     Tracking_UpdateLocalMap(pTr);
 
     Tracking_SearchLocalPoints(pTr);
@@ -1136,8 +1101,6 @@ void Tracking_CreateNewKeyFrame(Tracking* pTr)
     if(!LocalMapping_SetNotStop(pTr->mpLocalMapper,true))
         return;
 
- //   KeyFrame* pKF = new KeyFrame(mCurrentFrame,mpMap,mpKeyFrameDB);
-    //struct KeyFrame *pKF =(KeyFrame*)malloc(sizeof(struct KeyFrame));
     struct KeyFrame *pKF = new struct KeyFrame();
     KeyFrame_init(pKF, pTr->mCurrentFrame, pTr->mpMap, pTr->mpKeyFrameDB);
 
@@ -1256,10 +1219,6 @@ void Tracking_SearchLocalPoints(Tracking* pTr)
 
     if(nToMatch>0)
     {
-       // ORBmatcher matcher(0.8);
-       // struct ORBmatcher sORBmatcher;
-       // ORBmatcher *matcher = &sORBmatcher;
-       // ORBmatcher_init(matcher, 0.8, true);          
         ORBmatcher* matcher= new ORBmatcher();
         ORBmatcher_init(matcher, 0.8, true);
 
@@ -1426,7 +1385,7 @@ bool Tracking_Relocalization(Tracking* pTr)
 
     // Relocalization is performed when tracking is lost
     // Track Lost: Query KeyFrame Database for keyframe candidates for relocalisation
-    vector<KeyFrame*> vpCandidateKFs = pTr->mpKeyFrameDB->DetectRelocalizationCandidates(pTr->mCurrentFrame);
+    vector<KeyFrame*> vpCandidateKFs = KeyFrameDatabase_DetectRelocalizationCandidates(pTr->mpKeyFrameDB,pTr->mCurrentFrame);
 
     if(vpCandidateKFs.empty())
         return false;
@@ -1435,10 +1394,6 @@ bool Tracking_Relocalization(Tracking* pTr)
 
     // We perform first an ORB matching with each candidate
     // If enough matches are found we setup a PnP solver
-   // ORBmatcher matcher(0.75,true);
-    //struct ORBmatcher sORBmatcher;
-    //ORBmatcher *matcher = &sORBmatcher;
-    //ORBmatcher_init(matcher, 0.75, true);          
     ORBmatcher* matcher= new ORBmatcher();
     ORBmatcher_init(matcher,0.75, true);
 
@@ -1480,10 +1435,6 @@ bool Tracking_Relocalization(Tracking* pTr)
     // Alternatively perform some iterations of P4P RANSAC
     // Until we found a camera pose supported by enough inliers
     bool bMatch = false;
-//    ORBmatcher matcher2(0.9,true);
-   // struct ORBmatcher sORBmatcher2;
-   // ORBmatcher *matcher2 = &sORBmatcher2;
-   // ORBmatcher_init(matcher2, 0.9, true);          
     ORBmatcher* matcher2 = new ORBmatcher();
     ORBmatcher_init(matcher2, 0.9, true);
 
@@ -1570,7 +1521,6 @@ bool Tracking_Relocalization(Tracking* pTr)
                     }
                 }
 
-
                 // If the pose is supported by enough inliers stop ransacs and continue
                 if(nGood>=50)
                 {
@@ -1618,7 +1568,7 @@ void Tracking_Reset(Tracking* pTr)
 
     // Clear BoW Database
     cout << "Reseting Database...";
-    pTr->mpKeyFrameDB->clear();
+    KeyFrameDatabase_clear(pTr->mpKeyFrameDB);
     cout << " done" << endl;
 
     // Clear Map (this erase MapPoints and KeyFrames)
@@ -1641,7 +1591,6 @@ void Tracking_Reset(Tracking* pTr)
 
     if(pTr->mpViewer)
       Viewer_Release(pTr->mpViewer);
-       // Viewer_Release(mpViewer);
 }
 
 void Tracking_ChangeCalibration(Tracking* pTr,const string &strSettingPath)

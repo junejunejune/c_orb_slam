@@ -36,7 +36,6 @@ bool KeyFrame_lId(KeyFrame* pKF1, KeyFrame* pKF2){
     return pKF1->mnId<pKF2->mnId;
 }
 
-
 void KeyFrame_init(KeyFrame *pKeyFrame, Frame *F, Map *pMap, KeyFrameDatabase *pKFDB)
 {
     pKeyFrame->mnFrameId=F->mnId;  pKeyFrame->mTimeStamp=F->mTimeStamp; pKeyFrame->mnGridCols=FRAME_GRID_COLS; pKeyFrame->mnGridRows=FRAME_GRID_ROWS;
@@ -557,7 +556,7 @@ void KeyFrame_SetBadFlag(KeyFrame* pKeyFrame)
 
 
     Map_EraseKeyFrame(pKeyFrame->mpMap,pKeyFrame);
-    pKeyFrame->mpKeyFrameDB->erase(pKeyFrame);
+    KeyFrameDatabase_erase(pKeyFrame->mpKeyFrameDB,pKeyFrame);
 }
 
 bool KeyFrame_isBad(KeyFrame* pKeyFrame)

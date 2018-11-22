@@ -60,7 +60,6 @@ namespace ORB_SLAM2
 
 struct PnPsolver 
 {
-
   double uc, vc, fu, fv;
 
   double * pws, * us, * alphas, * pcs;
@@ -128,6 +127,7 @@ struct PnPsolver
   vector<float> mvMaxError;
 
 };
+
   void PnPsolver_init(PnPsolver* pPnP,const Frame *F, const vector<MapPoint*> &vpMapPointMatches);
 
   void PnPsolver_SetRansacParameters(PnPsolver* pPnP,double probability = 0.99, int minInliers = 8 , int maxIterations = 300, int minSet = 4, float epsilon = 0.4,
@@ -187,8 +187,6 @@ struct PnPsolver
 		    double R_src[3][3], double t_src[3]);
 
   void PnPsolver_mat_to_quat(PnPsolver* pPnP,const double R[3][3], double q[4]);
-
-
 } //namespace ORB_SLAM
 
 #endif //PNPSOLVER_H

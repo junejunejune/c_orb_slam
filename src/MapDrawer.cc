@@ -27,7 +27,6 @@
 namespace ORB_SLAM2
 {
 
-
 void MapDrawer_init(MapDrawer* pMD, Map* pMap, const string &strSettingPath)
 {
     pMD->mpMap=pMap;

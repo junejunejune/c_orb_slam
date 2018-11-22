@@ -33,9 +33,9 @@
 namespace ORB_SLAM2
 {
 
-class Tracking;
-class LoopClosing;
-class Map;
+struct Tracking;
+struct LoopClosing;
+struct Map;
 
 struct LocalMapping
 {
@@ -44,7 +44,7 @@ struct LocalMapping
     bool mbResetRequested;
     std::mutex mMutexReset;
 
-   bool mbFinishRequested;
+    bool mbFinishRequested;
     bool mbFinished;
     std::mutex mMutexFinish;
 
