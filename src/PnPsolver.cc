@@ -116,15 +116,15 @@ void PnPsolver_init(PnPsolver* nPnP,const Frame *F, const vector<MapPoint*> &vpM
 
     PnPsolver_SetRansacParameters(nPnP);
 }
-/*
-PnPsolver::~PnPsolver()
+
+void PnPsolver_destruct(PnPsolver* nPnP)
 {
-  delete [] pws;
-  delete [] us;
-  delete [] alphas;
-  delete [] pcs;
+  delete [] nPnP->pws;
+  delete [] nPnP->us;
+  delete [] nPnP->alphas;
+  delete [] nPnP->pcs;
 }
-*/
+
 
 void PnPsolver_SetRansacParameters(PnPsolver* pPnP, double probability, int minInliers, int maxIterations, int minSet, float epsilon, float th2)
 {

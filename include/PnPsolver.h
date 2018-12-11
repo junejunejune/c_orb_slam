@@ -130,6 +130,8 @@ struct PnPsolver
 
   void PnPsolver_init(PnPsolver* pPnP,const Frame *F, const vector<MapPoint*> &vpMapPointMatches);
 
+  void PnPsolver_destruct(PnPsolver* nPnP);
+
   void PnPsolver_SetRansacParameters(PnPsolver* pPnP,double probability = 0.99, int minInliers = 8 , int maxIterations = 300, int minSet = 4, float epsilon = 0.4,
                            float th2 = 5.991);
 

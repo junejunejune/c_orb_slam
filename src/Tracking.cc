@@ -1428,6 +1428,8 @@ bool Tracking_Relocalization(Tracking* pTr)
                 PnPsolver_SetRansacParameters(pSolver,0.99,10,300,4,0.5,5.991);
                 vpPnPsolvers[i] = pSolver;
                 nCandidates++;
+
+                PnPsolver_destruct(pSolver);  
             }
         }
     }
